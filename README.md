@@ -26,9 +26,9 @@
     ```git
     git status
     ```
-    `*`변경된 파일, 스테이징된 파일 등의 정보 확인 가능
+    `-> 변경된 파일, 스테이징된 파일 등의 정보 확인 가능`
     
-    `*`untracked file : 한번도 버전 관리되지 않은 파일 -> staging area에만 있는 상태
+    `-> untracked file : 한번도 버전 관리되지 않은 파일 -> staging area에만 있는 상태`
 
 
 6. 현재 디렉토리의 변경된 파일을 스테이징 영역에 추가
@@ -44,12 +44,12 @@
     # 여러개의 파일
     git add a.txt b.txt c.txt
     ```
-    `*`change not staged for commit : 변경 사항 있었지만 스테이징 되지 않음 -> stage area에만 있는 상태
+    `-> change not staged for commit : 변경 사항 있었지만 스테이징 되지 않음 -> stage area에만 있는 상태`
 7. 스테이징 영역의 파일을 커밋하여 버전 기록
     ```git
     git commit -m '커밋이름'
     ```
-    `*`nothing to commit, working tree clean : commit까지 했지만 변경 사항 없음 -> staging, repository area 둘 다 존재 X
+    `-> nothing to commit, working tree clean : commit까지 했지만 변경 사항 없음 -> staging, repository area 둘 다 존재 X`
 
 8. 현재까지 커밋된 히스토리 확인
     ```git
