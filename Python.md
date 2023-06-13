@@ -2806,3 +2806,414 @@ p2 = Person("이순신",44)
 print("p1", p.info(),Person.get_address())
 print("p2", p2.info(), Person.get_address())
 ```
+
+## 예외처리
+
+### 개요
+
+- 프로그램 실행 중 발생되는 의도하지 않은 사건
+- 사용자가 직접 명시적으로 예외를 발생시킬 수 있음.
+- 프로그램 실행 중 예외가 발생하면 비정상 종료됨.
+- 비정상 종료되는 프로그램을 정상 종료로 처리하는 것이 예외처리
+- 예시
+    
+    ```python
+    print("1") # 정상 종료
+    print("2") # 정상 종료
+    
+    n = 0
+    result = 10/n
+    print("결과값:", result) # 0으로 나눌 수 없으므로 비정상 종료됨. 
+    
+    print("3")
+    print("end. 정상종료")
+    ```
+    
+
+### 예외처리 (try~except~finally문)
+
+```python
+print("1")
+print("2")
+
+try:
+    n = 0
+    result = 10/n
+    print("결과값:", result)
+except ZeroDivisionError as e: # 적합한 예외클래스를 지정해야 한다.
+    print("0으로 나누어 예외 발생 됨")
+finally:
+		print("3")
+		print("end. 정상종료")
+
+###########################################################
+''' 실행 결과
+1
+2
+0으로 나누어 예외 발생 됨 # 비정상 종료대신 except의 결과값 반환
+3
+end. 정상종료
+'''
+```
+
+<aside>
+💡 except ZeroDivisionError as e:
+오류가 발생하는 원인을 알고 적합한 예외 클래스를 지정해야 한다.
+
+단, 부모 예외클래스 지정 가능 (부모는 자식을 포함하는 큰 개념)
+* [https://docs.python.org/3/library/exceptions.html](https://docs.python.org/3/library/exceptions.html)
+
+다형성을 위해 모든 예외를 Exception으로 사용할 수 있으나 권장 안함.
+디테일하게 처리할 것을 권장
+
+</aside>
+
+<aside>
+💡 Finally문
+무조건 실행되는 문장
+cf) except 문은 에러 발생시에만 실행 됨.
+
+</aside>
+
+- 여러개의 예외 클래스 지정
+
+```python
+print("1")
+print("2")
+
+try:
+    n = 0
+    result = 10/n
+    print("결과값:", result)
+except ZeroDivisionError as e:
+    print("error", e) # 에러가 발생한 이유를 알 수 있음.
+except ValueError as e:
+    print("error", e)
+except Exception as e:
+    print("error", e)
+finally:
+		print("3")
+		print("end. 정상종료")
+```
+
+## 파일읽기/쓰기
+
+### 파일 읽기
+
+- **txt 파일**
+    1. **f.read( ) : 한번에 str 반환한다.**
+        
+        ```python
+        with open(r"c:\sample.txt", "r", encoding="utf-8") as f:
+            contents = f.read()
+            print(contents)
+        print("*"*100)
+        '''
+        hello
+        world
+        홍길동
+        '''
+        ```
+        
+    2. **f.readline( ) : 첫줄만 반환한다. ⇒ 반복적으로 읽기**
+        
+        ```python
+        with open(r"c:\sample.txt", "r", encoding="utf-8") as f:
+            line = f.readline()
+            print(line)
+        print("*"*100)
+        '''
+        hello
+        '''
+        ```
+        
+        ```python
+        with open(r"c:\sample.txt", "r", encoding="utf-8") as f:
+            while True:
+                line = f.readline()
+                if not line: break # EOF (End of File 의미)
+                print(line, end="")
+        ```
+        
+    3. **f.readlines( ) : 한번에 list로 반환한다.**
+        
+        ```python
+        with open(r"c:\sample.txt", "r", encoding="utf-8") as f:
+            list_line = f.readlines()
+            print(list_line)
+            for line in list_line:
+                print(line, end="")
+        '''
+        ['hello\n', 'world\n', '홍길동']
+        hello
+        world
+        홍길동
+        '''
+        ```
+        
+    4. **예외처리 추가 (일반적인 방법)**
+        
+        ```python
+        try:
+            with open(r"c:\sample2.txt", "r", encoding="utf-8") as f:
+                while True:
+                    line = f.readline()
+                    if not line: break # EOF (End of File 의미)
+                    print(line, end="")
+        except FileNotFoundError as e:
+            print("error:", e)
+        
+        print("end. 정상종료")
+        ```
+        
+- **csv 파일**
+    1. **csv.reader( ) : 한 줄씩 list로 반환하기**
+        1. **, 로 구분하기**
+            
+            ```python
+            import  csv
+            
+            with open(r"c:\sample3.csv", mode="r", encoding="utf-8") as f:
+                data = csv.reader(f)
+                for line in data:
+                    print(line, line[0], " ".join(line))
+                    # print(" ".join(line)) <- 세 list의 모든 값을 list 없이 가져오기
+            
+            '''
+            ['홍길동1', '40', '서울1'] 홍길동1 홍길동1 40 서울1
+            ['홍길동2', '20', '서울2'] 홍길동2 홍길동2 20 서울2
+            ['홍길동3', '20', '서울3'] 홍길동3 홍길동3 20 서울3
+            '''
+            ```
+            
+        
+        **b. | 로 구분하기**
+        
+        ```python
+        import  csv
+        
+        with open(r"c:\sample4.csv", mode="r", encoding="utf-8") as f:
+            data = csv.reader(f, delimiter="|") # 구분자가 쉼표가 아닐 경우 명시해 주어야 함.
+            for line in data:
+                print(line, line[0], " ".join(line))
+        
+        '''
+        ['홍길동1|40|서울1'] 홍길동1 홍길동1 40 서울1
+        ['홍길동2|20|서울2'] 홍길동2 홍길동2 20 서울2
+        ['홍길동3|20|서울3'] 홍길동3 홍길동3 20 서울3
+        '''
+        ```
+        
+
+### 파일 쓰기
+
+- **txt 파일**
+    - 파일이 없으면 자동으로 생성한다.
+    1. **mode : w (덮어 쓰기)**
+        
+        ```python
+        with open(r"c:\sample2.txt", "w", encoding='utf-8') as f:
+            f.write("numpy") # 내용 바꿔서 실행하면 덮어쓰기 됨.
+        print("end. 정상종료")
+        ```
+        
+    
+    1. **mode : a (추가)**
+        
+        ```python
+        with open(r"c:/sample2.txt", "w", encoding='utf-8') as f:
+        		f.write("numpy\n")
+        print("end. 정상종료")
+        ```
+        
+- **csv 파일**
+    1. **한줄 작성 ( writerow( 집합형 ) )**
+        
+        ```python
+        import csv
+        
+        with open(r"c:\sample6.csv", mode="w", encoding="utf-8") as f:
+            data = csv.writer(f)
+            data.writerow(["홍길동2", 20, "서울2"]) # 집합형만 입력 가능
+        ```
+        
+    2. **여러줄 작성( ( writerows( 집합형 ) )**
+        
+        ```python
+        import csv
+        
+        with open(r"c:\sample7.csv", mode="w", newline="", encoding="utf-8") as f:
+            data = csv.writer(f)
+            data.writerows([["홍길동1", 20, "서울1"],["홍길동2", 20, "서울2"]]) # 집합형만 입력 가능
+        ```
+        
+
+## JASON
+
+### 개요
+
+- JSON : JavaScript Object Notation
+- 외부에서 얻은 데이터를 문자열의 형태로 나타내기 위해 사용
+
+### **문자열 →** JASON (jason.loads(문자열))
+
+1. **dict 형태의 문자열 → JASON ⇒ <class 'str'> → <class 'dict'>**
+    
+    ```python
+    import json
+    
+    s = '{"username":"홍길동","age":20}' #dict 형태의 문자열 <class 'str'>
+    
+    #문자열을 객체로 변환하기
+    s_json = json.loads(s)
+    
+    print(s_json, type(s_json)) # <class 'dict'>
+    print(s_json["username"], s_json["age"]) # {'username': '홍길동', 'age': 20} <class 'dict'>
+    ```
+    
+
+1. **list 형태의 문자열 → JASON ⇒ <class 'str'> → <class 'list'>**
+    
+    ```python
+    l_s = "[10,20,30]" # list 형태의 문자열 <class 'str'>
+    
+    l_json = json.loads((l_s))
+    print(l_json, type(l_json)) # <class 'list'>
+    print(l_json[0],l_json[1],l_json[2]) # 10 20 30
+    ```
+    
+
+### JASON → 문자열 (jason.dumps(JASON))
+
+```python
+s_json = {"username":"홍길동","age":20}
+print(s_json, type(s_json))
+# {'username': '홍길동', 'age': 20} <class 'dict'>
+
+s = json.dumps(s_json)
+print(s, type(s))
+# {"username": "\ud64d\uae38\ub3d9", "age": 20} <class 'str'>
+```
+
+## 날짜 데이터
+
+### 주요 함수
+
+```python
+from datetime import datetime
+
+print("1. 현재날짜:", datetime.now()) # 2023-06-05 16:11:26.833294
+print("1. 현재날짜:", datetime.today()) # 2023-06-05 16:11:26.833295
+
+print("2. 년도:", datetime.today().year) # 2023
+print("2. 월:", datetime.today().month) # 6
+print("2. 일:", datetime.today().day) # 14
+print("2. 시간:", datetime.today().hour) # 1
+print("2. 분:", datetime.today().minute) # 4
+print("2. 초:", datetime.today().second) # 24
+```
+
+### 특정 날짜 생성
+
+```python
+new_date = datetime(2022, 5,19) # datetime 생성
+new_date = datetime(year=2022, month=5, day=19)
+new_date = datetime(year=2022, month=5, day=19, hour=12, minute=20)
+print(new_date)
+# 2022-05-19 12:20:00
+```
+
+### 문자열 → 날짜
+
+- **datetime.strptime( ‘문자열’, '%Y-%m-%d %H:%M:%S’ )**
+
+```python
+s = "2022년12월13일 12:24:13"
+s_date = datetime.strptime(s, '%Y년%m월%d일 %H:%M:%S')
+print(s, s_date, type(s_date)) 
+# 2022년12월13일 12:24:13 2022-12-13 12:24:13 <class 'datetime.datetime'>
+```
+
+### 날짜 → 문자열
+
+- **날짜타입변수.striftime( ‘포맷’ )**
+
+```python
+# s_date : 2022년12월13일 12:24:13 2022-12-13 12:24:13 <class 'datetime.datetime'>
+
+s = s_date.strftime('%Y년%m월%d일 %H:%M:%S')
+print(s, s_date, type(s)) 
+# 2022년12월13일 12:24:13 2022-12-13 12:24:13 <class 'str'>
+```
+
+## 경로
+
+### 현재 작업 경로 출력
+
+```python
+import os
+print(os.getcwd()) # C:\Users\김소희\PycharmProjects\pythonProject1
+```
+
+### 임의의 경로 생성하기
+
+```python
+import os
+# 임의의 경로 : c:\users\xxx
+print(os.path.join("c\\", "users", "xxx"))
+# c\users\xxx
+```
+
+### 현재 작업 경로에 aaa.txt 파일 추가
+
+```python
+import os
+print(os.path.join(os.getcwd(), "aaa.txt")) 
+# C:\Users\김소희\PycharmProjects\pythonProject1\aaa.txt
+```
+
+### 특정 경로에서 디렉토리 경로 열기
+
+```python
+import os
+p = r"C:\Users\김소희\PycharmProjects\pythonProject1\aaa.txt"
+print(os.path.dirname(p))
+# C:\Users\김소희\PycharmProjects\pythonProject1
+```
+
+### 특정 경로에서 파일명 얻기
+
+```python
+import os
+p = r"C:\Users\김소희\PycharmProjects\pythonProject1\aaa.txt"
+print(os.path.basename(p)) # aaa.txt
+```
+
+### 특정 경로에서 디렉토리와 파일명 한꺼번에 분리하기
+
+```python
+import os
+p = r"C:\Users\김소희\PycharmProjects\pythonProject1\aaa.txt"
+dir, file = os.path.split(p)
+print(dir, file) # C:\Users\김소희\PycharmProjects\pythonProject1 aaa.txt
+```
+
+### 파일에서 파일명과 확장자 분리
+
+```python
+import os
+p = r"C:\Users\김소희\PycharmProjects\pythonProject1\aaa.txt"
+file = os.path.basename(p) # aaa.txt
+
+file_name, extend_name = os.path.splitext(file)
+print(file_name, extend_name) # aaa .txt
+```
+
+### 특정 디렉토리 목록 보기
+
+```python
+import os
+dir_list = os.listdir(os.getcwd())
+print(dir_list) 
+# ['.idea', 'HelloTest.py', 'sample01_datatype1_일반.py', 'sample01_datatype2_집합.py ...]
+```
