@@ -2674,3 +2674,1699 @@ J  15.0          8         390.0  ...          70     usa         amc ambassador
     
 
 ### 주요 함수
+
+- **df.replace(dict, new값) : dict에 지정된 값을 new값으로 변경**
+    
+    ```python
+    # 원본 데이터
+    '''
+         a    b    c
+    A    0    2    3
+    B   10   20   30
+    C  100  200  300
+    '''
+    
+    new_df = df.replace({'a':100,'b':2,'c':[30,300]},999)
+    print(new_df)
+    '''
+         a    b    c
+    A    0  999    3
+    B   10   20  999
+    C  999  200  999
+    '''
+    ```
+    
+- **df.replace(dict, new값) => { old : new, old : new }**
+    
+    ```python
+    # 원본 데이터
+    '''
+         a    b    c
+    A    0    2    3
+    B   10   20   30
+    C  100  200  300
+    '''
+    
+    new_df = df.replace({20:2000,30:3000})
+    print(new_df)
+    '''
+         a     b     c
+    A    0     2  3000
+    B   10  2000  2000
+    C  100   200   300
+    '''
+    ```
+    
+- **df.rename( index|columns = {old : new, old : new} ) : 인덱스 및 컬럼명 변경**
+    
+    ```python
+    # 원본 데이터
+    '''
+         a    b    c
+    A    0    2    3
+    B   10   20   30
+    C  100  200  300
+    '''
+    
+    new_df = df.rename(columns={'a':'col1','b':'col2'})
+    print(new_df)
+    '''
+       col1  col2    c
+    A     0     2   30
+    B    10    20   20
+    C   100   200  300
+    '''
+    new_df = df.rename(index={'A':'row1','B':'row2'})
+    print(new_df)
+    '''
+            a    b    c
+    row1    0    2   30
+    row2   10   20   20
+    C     100  200  300
+    '''
+    ```
+    
+- **df.all ( axis =0|1 ) : 모든 컬럼(행) 값의 참/거짓 여부**
+    
+    ```python
+    # 원본 데이터
+    '''
+         a    b    c
+    A    0    2    3
+    B   10   20   30
+    C  100  200  300
+    '''
+    
+    x = df.all(axis=0) # 모든 컬럼값이 참이냐?
+    print(x)
+    '''
+    a    False
+    b     True
+    c     True
+    dtype: bool
+    '''
+    x = df.all(axis=1) # 모든 행값이 참이냐?
+    print(x)
+    '''
+    A    False
+    B     True
+    C     True
+    dtype: bool
+    '''
+    ```
+    
+- **df.any ( axis =0|1 ) : 특정 컬럼(행) 값의 참/거짓 여부**
+    
+    ```python
+    # 원본 데이터
+    '''
+         a    b    c
+    A    0    2    3
+    B   10   20   30
+    C  100  200  300
+    '''
+    
+    x = df.any(axis=0) # 하나라도 컬럼값이 참이냐?
+    print(x)
+    '''
+    a    True
+    b    True
+    c    True
+    dtype: bool
+    '''
+    x = df.any(axis=1) # 하나라도 행값이 참이냐?
+    print(x)
+    '''
+    A    True
+    B    True
+    C    True
+    dtype: bool
+    '''
+    ```
+    
+- **df.duplicated( ) : 중복된 행 값 여부 조회**
+    
+    ```python
+    # 원본 데이터
+    '''
+        k1  k2
+    0  one   1
+    1  one   1
+    2  one   2
+    3  two   3
+    4  two   3
+    5  two   4
+    6  two   4
+    '''
+    x = df.duplicated() # df에 중복된 행이 있냐? (위 -> 아래 단계적으로 체크)
+    print(x)
+    '''
+    0    False
+    1     True
+    2    False
+    3    False
+    4     True
+    5    False
+    6     True
+    dtype: bool
+    '''
+    ```
+    
+- **df.drop_duplicates( ignore_index=True ) : 중복된 값을 가진 행 제거 후 반환**
+    
+    ```python
+    # 원본 데이터
+    '''
+        k1  k2
+    0  one   1
+    1  one   1
+    2  one   2
+    3  two   3
+    4  two   3
+    5  two   4
+    6  two   4
+    '''
+    new_df = df.drop_duplicates(ignore_index=True)
+    print(new_df)
+    '''
+        k1  k2
+    0  one   1
+    1  one   2
+    2  two   3
+    3  two   4
+    '''
+    ```
+    
+- **df.apply( 함수, axis= 0|1 ) : df에 임의의 함수 적용**
+    
+    ```python
+    # 원본 데이터
+    '''
+      국어   수학
+    0  50  100
+    1  60  100
+    2  70  100
+    3  80  100
+    4  90  100
+    '''
+    x=df.apply(np.sum, axis=0)
+    print(x)
+    '''
+    국어    350
+    수학    500
+    dtype: int64
+    '''
+    x=df.apply(np.sum, axis=1)
+    print(x)
+    '''
+    0    150
+    1    160
+    2    170
+    3    180
+    4    190
+    dtype: int64
+    '''
+    x=df.apply(np.min, axis=1)
+    print(x)
+    '''
+    0    50
+    1    60
+    2    70
+    3    80
+    4    90
+    dtype: int64
+    '''
+    ```
+    
+    <aside>
+    💡 np.sum ← callback 함수(함수명만 알려주면 호출됨)
+    
+    </aside>
+    
+- **df.isin(집합형) : df에 집합형이 있나?**
+    
+    ```python
+    # 원본 데이터
+    '''
+       국어   수학
+    0  50  100
+    1  60   60
+    2  70  100
+    3  80  100
+    4  90   80
+    '''
+    
+    new_df = df.isin([60,80]) # df에 60, 80 값이 있냐?
+    print(new_df)
+    '''
+          국어     수학
+    0  False  False
+    1   True   True
+    2  False  False
+    3   True  False
+    4  False   True
+    '''
+    
+    new_df = df.isin({'수학':[60,80]}) # 수학 컬럼에 60, 80 값이 있냐?
+    print(new_df)
+    '''
+          국어     수학
+    0  False  False
+    1  False   True
+    2  False  False
+    3  False  False
+    4  False   True
+    '''
+    ```
+    
+- **df.nunique( axis=0|1 ) : unique한 값의 개수(기본적으로 null 제외)**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3  col4
+    1   1.0   2.0   NaN   NaN
+    2   2.0   3.0   3.0   NaN
+    3   2.0   2.0   2.0   NaN
+    4   NaN   2.0   3.0   NaN
+    5   1.0   NaN   3.0   NaN
+    '''
+    
+    x = df.nunique(axis=0)
+    print(x)
+    '''
+    col1    2 # 1, 2
+    col2    2 # 2, 3
+    col3    2 # 2, 3
+    col4    0 #NaN 밖에 없음
+    dtype: int64
+    '''
+    
+    x = df.nunique(axis=1)
+    print(x)
+    '''
+    1    2 # 1, 2
+    2    2 # 2, 3
+    3    1 # 2
+    4    2 # 2, 3
+    5    2 # 1, 3
+    dtype: int64
+    '''
+    ```
+    
+    ```python
+    x = df.nunique(axis=0, dropna=False)
+    print(x)
+    '''
+    col1    3 # 1, 2, NaN
+    col2    3 # 2, 3, NaN
+    col3    3 # 2, 3, NaN
+    col4    1 # NaN
+    dtype: int64
+    '''
+    
+    x = df.nunique(axis=1, dropna=False)
+    print(x)
+    '''
+    1    3 # 1, 2, NaN
+    2    3 # 2, 3, NaN
+    3    2 # 2, NaN
+    4    3 # 2, 3, NaN
+    5    3 # 1, 2, NaN
+    dtype: int64
+    '''
+    ```
+    
+- **df.query(조건식) => 다른 색인보다 성능이 떨어짐**
+    
+    ```python
+    # 원본 데이
+    
+    df = pd.DataFrame({"국어":[50,60,70,80,90],"수학":[100,60,100,100,80]})
+    print(df)
+    '''
+      국어   수학
+    0  50  100
+    1  60  60
+    2  70  100
+    3  80  100
+    4  90  80
+    '''
+    
+    new_df = df.query('국어>70')
+    print(new_df)
+    '''
+       국어   수학
+    3  80  100
+    4  90   80
+    '''
+    ```
+    
+
+## Series 함수
+
+### 기술통계 관련 함수
+
+- **최대 / 최소값 구하기**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3
+    A     4  16.0    10
+    B     6   8.0    11
+    C     9   NaN    12
+    D     5   6.0    12
+    E    15   6.0    12
+    '''
+    
+    # 특정 컬럼의 최대값 구하기
+    x = df['col1'].max(axis=0)
+    print(x)
+    '''
+    15
+    '''
+    
+    # 특정 컬럼의 최소값 구하기
+    x = df['col1'].min(axis=0)
+    print(x)
+    '''
+    4
+    '''
+    ```
+    
+- **누적 최대 / 최소값 구하기**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3
+    A     4  16.0    10
+    B     6   8.0    11
+    C     9   NaN    12
+    D     5   6.0    12
+    E    15   6.0    12
+    '''
+    
+    # 특정 컬럼의 누적 최대값 구하기
+    x = df['col1'].cummax(axis=0)
+    print(x)
+    '''
+    A     4
+    B     6
+    C     9
+    D     9
+    E    15
+    Name: col1, dtype: int64
+    '''
+    
+    # 특정 컬럼의 누적 최소값 구하기
+    x = df['col1'].cummin(axis=0)
+    print(x)
+    '''
+    A    4
+    B    4
+    C    4
+    D    4
+    E    4
+    Name: col1, dtype: int64
+    '''
+    
+    ```
+    
+- **최대 / 최소값 label**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3
+    A     4  16.0    10
+    B     6   8.0    11
+    C     9   NaN    12
+    D     5   6.0    12
+    E    15   6.0    12
+    '''
+    
+    x = df['col1'].idxmax(axis=0)
+    print(x)
+    '''
+    E
+    '''
+    x = df['col1'].idxmin(axis=0)
+    print(x)
+    '''
+    A
+    '''
+    ```
+    
+- **총합 구하기**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3
+    A     4  16.0    10
+    B     6   8.0    11
+    C     9   NaN    12
+    D     5   6.0    12
+    E    15   6.0    12
+    '''
+    
+    x = df['col1'].sum(axis=0)
+    print(x)
+    '''
+    39
+    '''
+    x = df['col1'].cumsum(axis=0) # 중요***
+    print(x)
+    '''
+    A     4
+    B    10
+    C    19
+    D    24
+    E    39
+    Name: col1, dtype: int64
+    '''
+    ```
+    
+- **평균 구하기**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3
+    A     4  16.0    10
+    B     6   8.0    11
+    C     9   NaN    12
+    D     5   6.0    12
+    E    15   6.0    12
+    '''
+    
+    x = df['col1'].mean(axis=0)
+    print(x)
+    '''
+    7.8
+    '''
+    ```
+    
+- **중앙값 구하기**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3
+    A     4  16.0    10
+    B     6   8.0    11
+    C     9   NaN    12
+    D     5   6.0    12
+    E    15   6.0    12
+    '''
+    
+    x = df['col1'].median(axis=0)
+    print(x)
+    '''
+    6.0
+    '''
+    ```
+    
+- **곱연산 구하기**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3
+    A     4  16.0    10
+    B     6   8.0    11
+    C     9   NaN    12
+    D     5   6.0    12
+    E    15   6.0    12
+    '''
+    
+    x = df['col1'].prod(axis=0)
+    print(x)
+    '''
+    16200
+    '''
+    ```
+    
+- **분산 구하기**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3
+    A     4  16.0    10
+    B     6   8.0    11
+    C     9   NaN    12
+    D     5   6.0    12
+    E    15   6.0    12
+    '''
+    
+    x = df['col1'].var(axis=0)
+    print(x)
+    '''
+    19.700000000000003
+    '''
+    ```
+    
+- **표준편차 구하기**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3
+    A     4  16.0    10
+    B     6   8.0    11
+    C     9   NaN    12
+    D     5   6.0    12
+    E    15   6.0    12
+    '''
+    
+    x = df['col1'].std(axis=0)
+    print(x)
+    '''
+    4.43846820423443
+    '''
+    ```
+    
+- **개수 구하기 (null 제외)**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3
+    A     4  16.0    10
+    B     6   8.0    11
+    C     9   NaN    12
+    D     5   6.0    12
+    E    15   6.0    12
+    '''
+    
+    x = df['col1'].count()
+    print(x)
+    '''
+    5
+    '''
+    ```
+    
+
+### 주요 함수
+
+- **df['a'].replace( {old : new, old : new} ) : 값 변경**
+    
+    ```python
+    # 원본 데이터
+    
+    '''
+         a    b    c
+    A    0    2    3
+    B   10   20   30
+    C  100  200  300
+    '''
+    new_df = df['a'].replace({0:-1, 10:-2})
+    print(new_df)
+    '''
+    A     -1
+    B     -2
+    C    100
+    '''
+    ```
+    
+    <aside>
+    💡 컬럼이 하나이기 때문에 dict로 지정해 줄 필요 없음.
+    
+    </aside>
+    
+- **df[’a’].rename( ’new컬럼명’ ) : 컬럼명 변경**
+    
+    ```python
+    # 원본 데이터
+    
+    '''
+         a    b    c
+    A    0    2    3
+    B   10   20   30
+    C  100  200  300
+    '''
+    x = df['a'].rename('col1')
+    print(x)
+    '''
+    A      0
+    B     10
+    C    100
+    Name: col1, dtype: int64 ==> 'a' -> 'col1' 으로 변경됨
+    '''
+    ```
+    
+- **df['a'].all( ) : 컬럼의 참 / 거짓 여부**
+    
+    ```python
+    # 원본 데이터
+    
+    '''
+         a    b    c
+    A    0    2    3
+    B   10   20   30
+    C  100  200  300
+    '''
+    x = df['a'].all()
+    print(x) # False
+    
+    x = df['a'].any()
+    print(x) # True
+    ```
+    
+    ```python
+    ## 응용 : a 컬럼 값이 모두 10보다 크냐?
+    
+    x = (df['a']>10)
+    print(x)
+    '''
+    A    False
+    B    False
+    C     True
+    Name: a, dtype: bool
+    '''
+    
+    x = (df['a']>10).all()
+    print(x) # False
+    
+    x = (df['a']>10).any()
+    print(x) # True
+    ```
+    
+- **df[’a'].duplicated( ) : 특정 컬럼에 중복된 값이 있나?**
+    
+    ```python
+    # 원본 데이터
+    '''
+        k1  k2
+    0  one   1
+    1  one   1
+    2  one   2
+    3  two   3
+    4  two   3
+    5  two   4
+    6  two   4
+    '''
+    
+    x = df['k1'].duplicated()
+    print(x)
+    '''
+    0    False
+    1     True
+    2     True
+    3    False
+    4     True
+    5     True
+    6     True
+    Name: k1, dtype: bool
+    '''
+    ```
+    
+- **df[’a'].drop_duplicates(ignore_index=True) : 특정 컬럼의 중복값 제거 후 반환**
+    
+    ```python
+    # 원본 데이터
+    '''
+        k1  k2
+    0  one   1
+    1  one   1
+    2  one   2
+    3  two   3
+    4  two   3
+    5  two   4
+    6  two   4
+    '''
+    
+    x = df['k1'].drop_duplicates(ignore_index=True)
+    print(x)
+    '''
+    0    one
+    1    two
+    Name: k1, dtype: object
+    '''
+    ```
+    
+- **df[’a'].apply(함수) : 임의의 함수 적용**
+    
+    ```python
+    # 원본 데이터
+    '''
+       국어   수학
+    0  50  100
+    1  60  100
+    2  70  100
+    3  80  100
+    4  90  100
+    '''
+    
+    x = df['국어'].apply(lambda n : n+1) # lambda 함수 적용 가능
+    print(x)
+    '''
+    0    51
+    1    61
+    2    71
+    3    81
+    4    91
+    Name: 국어, dtype: int64
+    '''
+    ```
+    
+- **df['col1'].isin(집합형) : 집합형의 값이 컬럼 안에 있나?**
+    
+    ```python
+    # 원본 데이터
+    '''
+       국어   수학
+    0  50  100
+    1  60   60
+    2  70  100
+    3  80  100
+    4  90   80
+    '''
+    
+    new_df = df['국어'].isin([60,80]) # 국어 컬럼에 60, 80 값이 있냐?
+    print(new_df)
+    '''
+    0    False
+    1     True
+    2    False
+    3     True
+    4    False
+    Name: 국어, dtype: bool
+    '''
+    ```
+    
+- **df['col1'].nunique( ) : unique한 값의 개수(기본적으로 null 제외)**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3  col4
+    1   1.0   2.0   NaN   NaN
+    2   2.0   3.0   3.0   NaN
+    3   2.0   2.0   2.0   NaN
+    4   NaN   2.0   3.0   NaN
+    5   1.0   NaN   3.0   NaN
+    '''
+    
+    x = df['col1'].nunique()
+    print(x) # 2
+    
+    x = df['col1'].nunique(dropna=False)
+    print(x) # 3
+    ```
+    
+- **df['col1'].unique( ) : unique한 값 자체를 반환**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3  col4
+    1   1.0   2.0   NaN   NaN
+    2   2.0   3.0   3.0   NaN
+    3   2.0   2.0   2.0   NaN
+    4   NaN   2.0   3.0   NaN
+    5   1.0   NaN   3.0   NaN
+    '''
+    
+    x = df['col1'].unique()
+    print(x) # [ 1.  2. nan]
+    ```
+    
+    <aside>
+    💡 Series에서만 사용 가능하다.
+    
+    </aside>
+    
+- **df[컬럼].value_counts( ) : NaN 제외한 값의 빈도**
+    
+    ```python
+    # 원본 데이터
+    '''
+       col1  col2  col3  col4
+    1   1.0   2.0   NaN   NaN
+    2   2.0   3.0   3.0   NaN
+    3   2.0   2.0   2.0   NaN
+    4   NaN   2.0   3.0   NaN
+    5   1.0   NaN   3.0   NaN
+    '''
+    
+    x = df['col2'].value_counts()
+    print(x)
+    '''
+    col2
+    2.0    3
+    3.0    1
+    Name: count, dtype: int64
+    '''
+    
+    x = df['col2'].value_counts(ascending=True, dropna=False)
+    print(x)
+    '''
+    col2
+    3.0    1
+    NaN    1
+    2.0    3
+    Name: count, dtype: int64
+    '''
+    ```
+    
+- **df[컬럼].between[start, end] : 범위에 있으면 True, 없으면 False**
+    
+    ```python
+    # 원본 데이터
+    '''
+       국어   수학
+    0  50  100
+    1  60   60
+    2  70  100
+    3  80  100
+    4  90   80
+    '''
+    
+    x = df['국어'].between(70,100) # end 값 범위에 포함
+    print(x)
+    '''
+    0    False
+    1    False
+    2     True
+    3     True
+    4     True
+    Name: 국어, dtype: bool
+    '''
+    ```
+    
+    <aside>
+    💡 end 값이 범위에 포함된다.
+    
+    </aside>
+    
+
+### str 함수
+
+- **series.str.replace(old, new) : 컬럼 값 변경**
+    
+    ```python
+    # 원본 데이터
+    '''
+        name  age    birthday
+    0  Hello   18  1920/09/28
+    1  Happy   31  1910/03/26
+    2    Cat   33  2020/03/26
+    '''
+    
+    df['name1'] = df['name'].str.replace('Hello','hello')
+    print(df)
+    '''
+        name  age    birthday
+    0  hello   18  1920/09/28
+    1  Happy   31  1910/03/26
+    2    Cat   33  2020/03/26
+    '''
+    ```
+    
+- **인덱싱, 슬라이싱**
+    
+    ```python
+    # 원본 데이터
+    '''
+        name  age    birthday
+    0  Hello   18  1920/09/28
+    1  Happy   31  1910/03/26
+    2    Cat   33  2020/03/26
+    '''
+    # name컬럼의 문자열 값들을 각각 슬라이싱
+    df['name2'] = df['name'].str[1:]
+    print(df)
+    '''
+    name  age    birthday      name2
+    0  Hello   18  1920/09/28   ello
+    1  Happy   31  1910/03/26   appy
+    2    cat   33  2020/03/26   at
+    '''
+    
+    # name컬럼의 문자열 값들을 각각 인덱싱
+    df['name3'] = df['name'].str[0]
+    print(df)
+    '''
+    name  age    birthday      name1    name2 name3
+    0  Hello   18  1920/09/28  hello  ello     H
+    1  Happy   31  1910/03/26  Happy  appy     H
+    2    cat   33  2020/03/26    cat    at     c
+    '''
+    ```
+    
+- **upper, lower**
+    
+    ```python
+    # 원본 데이터
+    '''
+        name  age    birthday
+    0  Hello   18  1920/09/28
+    1  Happy   31  1910/03/26
+    2    Cat   33  2020/03/26
+    '''
+    df['name4'] = df['name'].str.upper()
+    df['name5'] = df['name'].str.lower()
+    print(df)
+    '''
+    name  age    birthday       name1 name2 name3    name4  name5
+    0  Hello   18  1920/09/28  hello  ello     H    HELLO  hello
+    1  Happy   31  1910/03/26  Happy  appy     H    HAPPY  happy
+    2    cat   33  2020/03/26    cat    at     c      CAT    cat
+    '''
+    ```
+    
+- **contains(값|값2) : 값이 있는지 없는지 True/False => boolean 인덱스**
+    
+    ```python
+    # 원본 데이터
+    '''
+        name  age    birthday
+    0  Hello   18  1920/09/28
+    1  Happy   31  1910/03/26
+    2    Cat   33  2020/03/26
+    '''
+    df['name6'] = df['name'].str.contains('a') # a를 포함하는지
+    df['name7'] = df['name'].str.contains('a|e') # a 또는 e 를 포함하는지
+    print(df)
+    '''
+    name  age    birthday         name1 name2 name3  name4  name5  name6  name7
+    0  Hello   18  1920/09/28  hello  ello     H     HELLO  hello  False   True
+    1  Happy   31  1910/03/26  Happy  appy     H     HAPPY  happy   True   True
+    2    cat   33  2020/03/26    cat    at     c       CAT    cat   True   True
+    '''
+    ```
+    
+    ```python
+    ## boolean 인덱스로 활용
+    ## 'a' 포함된 값만 출력
+    xxx = df['name']
+    print(xxx, type(xxx))
+    '''
+    0    Hello
+    1    Happy
+    2      cat
+    Name: name, dtype: object <class 'pandas.core.series.Series'>
+    '''
+    print(xxx.str.contains('a'))
+    '''
+    0    False
+    1     True
+    2     True
+    '''
+    print(xxx[xxx.str.contains('a')])
+    '''
+    1    Happy
+    2      cat
+    Name: name, dtype: object
+    '''
+    print(df['name'][df['name'].str.contains('a')])
+    '''
+    1    Happy
+    2      cat
+    Name: name, dtype: object
+    '''
+    ```
+    
+- **startswith, endswith => boolean 인덱스**
+    
+    ```python
+    # 원본 데이터
+    '''
+        name  age    birthday
+    0  Hello   18  1920/09/28
+    1  Happy   31  1910/03/26
+    2    Cat   33  2020/03/26
+    '''
+    
+    df['name8'] = df['name'].str.startswith('H')
+    print(df)
+    '''
+    name8
+    True
+    True
+    False
+    '''
+    ```
+    
+- **islower => boolean 인덱스**
+    
+    ```python
+    # 원본 데이터
+    '''
+        name  age    birthday
+    0  Hello   18  1920/09/28
+    1  Happy   31  1910/03/26
+    2    cat   33  2020/03/26
+    '''
+    
+    df['name9'] = df['name'].str.islower()
+    print(df)
+    '''
+    name9
+    False
+    False
+    True
+    '''
+    ```
+    
+- **one-hot 인코딩 변환**
+    
+    ```python
+    pets = pd.Series(['Cat', 'Dog', 'Bird'])
+    print(pets.str.get_dummies())
+    '''
+       Bird  Cat  Dog
+    0     0    1    0
+    1     0    0    1
+    2     1    0    0
+    '''
+    ```
+    
+
+## 날짜 데이터
+
+### Python 날짜 데이터
+
+- 기본 날짜 데이터
+    
+    ```python
+    from datetime import datetime
+    ```
+    
+    ```python
+    print("1. 현재날짜:", datetime.now()) #2023-06-05 16:10:28.236017
+    print("1. 현재날짜:", datetime.today()) #2023-06-05 16:10:28.237015
+    
+    print("2. 년도:", datetime.today().year)
+    print("2. 월:", datetime.today().month)
+    print("2. 일:", datetime.today().day)
+    print("2. 시간:", datetime.today().hour)
+    print("2. 분:", datetime.today().minute)
+    print("2. 초:", datetime.today().second)
+    ```
+    
+- 특정 날짜 생성
+    
+    ```python
+    # 특정날짜 생성
+    new_date = datetime(2022,5,19) #  datatime 생성
+    new_date = datetime(year=2022, month=5, day=19) #  datatime 생성
+    new_date = datetime(year=2022, month=5, day=19, hour=12, minute=20) #  datatime 생성
+    print(new_date)
+    ```
+    
+- 문자열 → 날짜
+    
+    ```python
+    #  datetime.strptime('문자열', '%Y-%m-%d %H:%M:%S')
+    s = "2022년12월13일 12:24:13"
+    s_date = datetime.strptime(s, '%Y년%m월%d일 %H:%M:%S')
+    print(s, s_date, type(s_date)) #<class 'datetime.datetime'>
+    ```
+    
+- 날짜 → 문자열
+    
+    ```python
+    #  날짜타입변수.strftime('포맷')
+    s = s_date.strftime('%Y년%m월%d일 %H:%M:%S')
+    print(s, type(s)) #<class 'str'>
+    ```
+    
+
+### Pandas 날짜 데이터 처리
+
+- **str --> datetime**
+    
+    ```python
+    xxx = pd.to_datetime('2023/06/05')
+    xxx = pd.to_datetime('2023-06-05')
+    xxx = pd.to_datetime('2023 06 05')
+    
+    xxx = pd.to_datetime('2023:06:05',format='%Y:%m:%d')
+    xxx = pd.to_datetime('2023년 06월 05일',format='%Y년 %m월 %d일')
+    xxx = pd.to_datetime('2023년 06월 05일 12:30:30',format='%Y년 %m월 %d일 %H:%M:%S')
+    print(xxx) # 2023-06-05 00:00:00
+    ```
+    
+- **날짜 데이터 연산**
+    
+    ```python
+    xxx = pd.to_datetime('2023/06/05')
+    xxx2 = pd.to_datetime('2023/1/05')
+    print(xxx-xxx2) # 151 days 00:00:00
+    ```
+    
+    <aside>
+    💡 차이값을 day로 반환
+    
+    </aside>
+    
+- **datetime을 지정된 범위에서 반환**
+    1. **start와 end를 명시**
+        
+        ```python
+        xxx = pd.date_range("2023/1/1", "2023/6/1")
+        print(xxx) # day 단위로 반환 됨 (freq='D')
+        '''
+        DatetimeIndex(['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04',
+                       '2023-01-05', '2023-01-06', '2023-01-07', '2023-01-08',
+                       '2023-01-09', '2023-01-10',
+                       ...
+                       '2023-05-23', '2023-05-24', '2023-05-25', '2023-05-26',
+                       '2023-05-27', '2023-05-28', '2023-05-29', '2023-05-30',
+                       '2023-05-31', '2023-06-01'],
+                      dtype='datetime64[ns]', length=152, freq='D')
+        '''
+        ```
+        
+        ```python
+        xxx = pd.date_range("2023/1/1", "2023/6/1",freq='M')
+        print(xxx) # month 단위로 반환 됨 (freq='M')
+        '''
+        DatetimeIndex(['2023-01-31', '2023-02-28', '2023-03-31', '2023-04-30',
+                       '2023-05-31'],
+                      dtype='datetime64[ns]', freq='M')
+        '''
+        ```
+        
+        ```python
+        xxx = pd.date_range("2023/1/1", "2026/6/1",freq="Y")
+        print(xxx) # year 단위로 반환 됨 (freq='Y')
+        # DatetimeIndex(['2023-12-31', '2024-12-31', '2025-12-31'], dtype='datetime64[ns]', freq='A-DEC')
+        ```
+        
+        ```python
+        xxx = pd.date_range("2023/1/1", "2023/6/1",freq='3M')
+        print(xxx) # 3 month 단위로 반환 됨 (freq='3M')
+        # DatetimeIndex(['2023-01-31', '2023-04-30'], dtype='datetime64[ns]', freq='3M')
+        ```
+        
+    2. **start + periods**
+        
+        ```python
+        xxx = pd.date_range("2023/1/1", periods=5)
+        print(xxx)
+        '''
+        DatetimeIndex(['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04',
+                       '2023-01-05'],
+                      dtype='datetime64[ns]', freq='D')
+        ```
+        
+        ```python
+        xxx = pd.date_range("2023/1/1", periods=5, freq="M")
+        print(xxx)
+        '''
+        DatetimeIndex(['2023-01-31', '2023-02-28', '2023-03-31', '2023-04-30',
+                       '2023-05-31'],
+                      dtype='datetime64[ns]', freq='M')
+        '''
+        ```
+        
+    3. **활용 : 인덱스에 날짜 넣기**
+        
+        ```python
+        xxx = pd.date_range("2023/6/1", periods=5)
+        df = pd.DataFrame({'시작가격':[500,200,50,240,455],
+                           '종가':[1500,1200,150,1240,1455],
+                           }, index=xxx)
+        print(df)
+        '''
+                    시작가격    종가
+        2023-06-01   500  1500
+        2023-06-02   200  1200
+        2023-06-03    50   150
+        2023-06-04   240  1240
+        2023-06-05   455  1455
+        '''
+        ```
+        
+- **Series --> datetime**
+    
+    ```python
+    # Series 데이
+    
+    born = df['Born']
+    print(born) # born Series 출력/ 문자열이기 때문에 연산 불가
+    '''
+    0    1920-07-25
+    1    1876-06-13
+    2    1820-05-12
+    3    1867-11-07
+    4    1907-05-27
+    5    1813-03-15
+    6    1912-06-23
+    7    1777-04-30
+    Name: Born, dtype: object
+    '''
+    
+    born = pd.to_datetime(df['Born']) # 문자열 -> 날짜 데이터
+    died = pd.to_datetime(df['Died']) # 문자열 -> 날짜 데이터
+    
+    # 연산하기
+    df["생애-일"] = died-born
+    df["생애-년"] = died.dt.year - born.dt.year
+    ```
+    
+- **Series.dt 속성 => 날짜타입의 Series만 가능**
+    
+    ```python
+    xxx = pd.date_range("2023/1/1", periods=5)
+    print(xxx)
+    
+    '''
+    DatetimeIndex(['2023-01-01', '2023-01-02', '2023-01-03', '2023-01-04',
+                   '2023-01-05'],
+                  dtype='datetime64[ns]', freq='D')
+    '''
+    df = pd.DataFrame({"cur_date":xxx})
+    print(df)
+    '''
+        cur_date
+    0 2023-01-01
+    1 2023-01-02
+    2 2023-01-03
+    3 2023-01-04
+    4 2023-01-05
+    '''
+    print(df.info()) # Dtype이 datetime인 것 확인
+    '''
+     #   Column    Non-Null Count  Dtype         
+    ---  ------    --------------  -----         
+     0   cur_date  5 non-null      datetime64[ns]
+    dtypes: datetime64[ns](1)
+    memory usage: 168.0 bytes
+    None
+    '''
+    ```
+    
+    ```python
+    # Series에 날짜 데이터 넣은 후 활용
+    print("년도:", df['cur_date'].dt.year)
+    print("월:", df['cur_date'].dt.month)
+    print("일:", df['cur_date'].dt.day)
+    ```
+    
+- **datetime -> str로 변경**
+    
+    ```python
+    print(df['cur_date'], df['cur_date'].astype(str))
+    '''
+    0   2023-01-01
+    1   2023-01-02
+    2   2023-01-03
+    3   2023-01-04
+    4   2023-01-05
+    Name: cur_date, dtype: datetime64[ns] 
+    
+    0    2023-01-01
+    1    2023-01-02
+    2    2023-01-03
+    3    2023-01-04
+    4    2023-01-05
+    Name: cur_date, dtype: object
+    '''
+    ```
+    
+
+## 병합
+
+### 공통 컬럼명 기준 (inner 병합)
+
+- **공통컬럼이 한개, inner 병합**
+    
+    ```python
+    # 원본 데이터
+    print(df1)
+    '''
+      x1  x2
+    0  A   1
+    1  B   2
+    2  C   3
+    '''
+    
+    print(df2)
+    '''
+      x1 x3  x4
+    0  A  T  T1
+    1  B  F  F1
+    2  D  T  T1
+    '''
+    ```
+    
+    ```python
+    new_df = pd.merge(df1, df2, how='inner', on='x1')
+    print(new_df) # 공통 컬럼명을 가진 x1을 기준으로 값이 같은 A, B 행만 join
+    '''
+      x1  x2 x3  x4
+    0  A   1  T  T1
+    1  B   2  F  F1
+    '''
+    ```
+    
+    - **df1과 df2를 병합할 때 특정 컬럼(x1,x3)만 보고싶을 경우**
+    
+    ```python
+    new_df = pd.merge(df1, df2[['x1','x3']], how='inner', on='x1')
+    print(new_df) 
+    '''
+      x1  x2 x3
+    0  A   1  T
+    1  B   2  F
+    '''
+    ```
+    
+    - **indicator=True**
+    
+    ```python
+    new_df = pd.merge(df1, df2, how='inner', on='x1', indicator=True)
+    print(new_df)
+    '''
+      x1  x2 x3  x4 _merge
+    0  A   1  T  T1   both  * both : df1, df2와 공통 값을 가진 행을 표시
+    1  B   2  F  F1   both      => inner 병합시에는 모든 행이 both이지만
+                                    outer 병합 시 유용하게 사용할 수 있음.
+    '''
+    ```
+    
+- **공통컬럼이 여러개(복합 컬럼), inner 병합**
+    
+    ```python
+    print(df1)
+    '''
+      TrasactionID GoodsID  GoodsIDSeqNo  Quantity
+    0           T1      G1             1         1
+    1           T2      G1             1         1
+    2           T3      G1             2         1
+    3           T4      G2             1         1
+    4           T5      G3             1         1
+    '''
+    print(df2)
+    '''
+      GoodsID  GoodsIDSeqNo  GoodsPrice
+    0      G1             1        1000
+    1      G1             2        1100
+    2      G2             1        2000
+    3      G2             2        2200
+    '''
+    ```
+    
+    ```python
+    new_df = pd.merge(df1, df2, how='inner', on=['GoodsID','GoodsIDSeqNo'])
+    print(new_df)
+    '''
+      TrasactionID GoodsID  GoodsIDSeqNo  Quantity  GoodsPrice
+    0           T1      G1             1         1        1000
+    1           T2      G1             1         1        1000
+    2           T3      G1             2         1        1100
+    3           T4      G2             1         1        2000
+    '''
+    ```
+    
+    <aside>
+    💡 on = [ 여러개의 공통 컬럼]
+    
+    </aside>
+    
+- **query**
+    
+    ```python
+    print(df1)
+    '''
+      x1  x2
+    0  A   1
+    1  B   2
+    2  C   3
+    '''
+    print(df2)
+    '''
+      x1 x3  x4
+    0  A  T  T1
+    1  B  F  F1
+    2  D  T  T1
+    '''
+    ```
+    
+    ```python
+    new_df=pd.merge(df1, df2, on="x1", how="inner")\
+        .query("x1=='A'")\
+        .drop(columns=['x2','x4'])\
+        .rename(columns={'x1':'X1','x3':'X3'})
+    print(new_df)
+    '''
+    X1 X3
+    0  A  T
+    '''
+    ```
+    
+    <aside>
+    💡 병합할 때 조건을 걸어준다.
+    
+    .query("x1=='A'") : x1컬럼 중 A값을 가진 행만
+    .drop(columns=['x2','x4']) : 컬럼 x2, x4는 제외
+    .rename(columns={'x1':'X1','x3':'X3'} : 컬럼x1은 X1으로, 컬럼 x3은 X3으로 이름을 변경
+    
+    </aside>
+    
+- **suffixes 속성**
+    
+    ```python
+    print(df1)
+    '''
+      x1  x2
+    0  A   1
+    1  B   2
+    2  C   3
+    '''
+    print(df2)
+    '''
+      x1 x2
+    0  A  T 
+    1  B  F 
+    2  D  T  
+    '''
+    ```
+    
+    ```python
+    new_df = pd.merge(df1,df2, on='x1', how='inner')
+    print(new_df)
+    '''
+      x1  x2_x x2_y   
+    0  A     1    T   
+    1  B     2    F
+    '''
+    ```
+    
+    <aside>
+    💡 df1과 df2에 같은 이름의 컬럼 x2가 있기 때문에
+    병합시 각각 x2_x, x2_y로 컬럼명이 구분되어 출력된다.
+    
+    </aside>
+    
+    ```python
+    new_df = pd.merge(df1,df2, on='x1', how='inner', suffixes=["_left","_right"])
+    print(new_df)
+    '''
+      x1  x2_left x2_right
+    0  A        1        T      
+    1  B        2        F          
+    '''
+    ```
+    
+    <aside>
+    💡 suffixes를 쓰면 자동으로 변경되는 컬럼명을 직접 지정할 수 있다.
+    
+    </aside>
+    
+
+### 비공통 컬럼명(공통값 기준) (inner 병합)
+
+```python
+print(df1)
+'''
+  x1  x2
+0  A   1
+1  B   2
+2  C   3
+'''
+print(df2)
+'''
+  y1 x3
+0  A  T
+1  B  F
+2  D  T
+'''
+```
+
+```python
+new_df = pd.merge(df1,df2, how="inner", left_on='x1', right_on='y1')
+print(new_df)
+'''
+  x1  x2 y1 x3      
+0  A   1  A  T      
+1  B   2  B  F
+'''
+```
+
+<aside>
+💡 x1과 y1의 공통 값인 A, B가 있는 행만 출력됨.
+
+</aside>
+
+### 컬럼과 인덱스 기준 (inner 병합)
+
+```python
+# df1, df2 데이터
+
+print(df1)
+'''
+  key  value
+0   a      0
+1   b      1
+2   a      2
+3   a      3
+4   b      4
+5   c      5
+'''
+print(df2)
+'''
+   group_val
+a        3.5
+b        7.0
+'''
+```
+
+```python
+new_df = pd.merge(df1, df2, how="inner", left_on="key", right_on= df2.index)
+new_df = pd.merge(df1, df2, how="inner", left_on="key", right_index= True)
+print(new_df)
+'''
+		key  value  group_val
+0   a      0        3.5
+1   a      2        3.5
+2   a      3        3.5
+3   b      1        7.0
+4   b      4        7.0
+'''
+```
+
+<aside>
+💡 df1의 key 컬럼의 값과 df2의 인덱스 값을 기준으로 병합
+⇒ a와 b 값만 inner 병합 됨. & df1이 왼쪽, df2이 오른쪽에 병합
+
+</aside>
+
+```python
+new_df = pd.merge(df2, df1, how="inner", left_on=df2.index, right_on= "key")
+new_df = pd.merge(df2, df1, how="inner", left_index=True, right_on= "key")
+print(new_df)
+'''
+	   group_val key  value
+0        3.5   a      0
+1        3.5   a      2
+2        3.5   a      3
+3        7.0   b      1
+4        7.0   b      4
+'''
+```
+
+<aside>
+💡 df2의 인덱스 값과 df1의 key 컬럼의 값을 기준으로 병합
+⇒ a와 b 값만 inner 병합 됨. & df2이 왼쪽,  df1이 오른쪽에 병합
+
+</aside>
+
+### 인덱스와 인덱스 기준 (inner 병합)
+
+```python
+print(df1)
+'''
+  key  value
+K   a      0
+B   b      1
+S   a      2
+M   a      3
+V   b      4
+C   c      5
+'''
+
+print(df2)
+'''
+   g_value
+K      3.5
+S      7.0
+'''
+```
+
+```python
+new_df = pd.merge(df1, df2, how='inner', left_on=df1.index, right_on=df2.index)
+print(new_df)
+'''
+  key_0 key  value  g_value
+0     K   a      0      3.5
+1     S   a      2      7.0
+'''
+```
+
+<aside>
+💡 df1의 인데스, df2의 인덱스의 공통 인덱스를 가진 행만 병합
+이때, key_0이라는 새로운 컬럼이 생성됨.
+RangeIndex(start=0, stop=2, step=1)
+
+</aside>
+
+```python
+new_df = pd.merge(df1, df2, how='inner', left_on=df1.index, right_index=True)
+print(new_df)
+'''
+  key_0 key  value  g_value
+K     K   a      0      3.5
+S     S   a      2      7.0
+'''
+```
+
+<aside>
+💡 df1의 인데스, df2의 인덱스의 공통 인덱스를 가진 행만 병합
+이때, key_0이라는 새로운 컬럼이 생성됨.
+Index(['K', 'S'], dtype='object')
+
+</aside>
+
+```python
+new_df = pd.merge(df1, df2, how='inner', left_index=True, right_on=df2.index)
+print(new_df)
+'''
+  key_0 key  value  g_value
+K     K   a      0      3.5
+S     S   a      2      7.0
+'''
+```
+
+<aside>
+💡 df1의 인데스, df2의 인덱스의 공통 인덱스를 가진 행만 병합
+이때, key_0이라는 새로운 컬럼이 생성됨.
+Index(['K', 'S'], dtype='object')
+
+</aside>
+
+```python
+new_df = pd.merge(df1, df2, how='inner', left_index=True, right_index=True)
+print(new_df)
+'''
+  key  value  g_value
+K   a      0      3.5
+S   a      2      7.0
+'''
+```
+
+<aside>
+💡 df1의 인데스, df2의 인덱스의 공통 인덱스를 가진 행만 병합
+이때, key_0이라는 새로운 컬럼이 생성됨.
+Index(['K', 'S'], dtype='object')
+
+</aside>
+
+### 비공통 컬럼명(outer 병합)
