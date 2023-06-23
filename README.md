@@ -91,9 +91,10 @@
 ---
 ## 이슈 해결
 ❗이슈 : Git Repository에 있었던 프로젝트를 다 지워버리고 새로운 프로젝트를 push하려고 할 때
-    ```git
+
+    
     ! [rejected] master -> master (fetch first) error: failed to push some refs to 'https://github.com/xxx/test.git'
-    ```
+    
 
 💡해결
 
