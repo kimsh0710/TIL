@@ -3994,7 +3994,7 @@ J  15.0          8         390.0  ...          70     usa         amc ambassador
 
 ## 병합
 
-### 공통 컬럼명 기준 (inner 병합)
+### 공통 컬럼 기준 (inner 병합)
 
 - **공통컬럼이 한개, inner 병합**
     
@@ -4182,7 +4182,7 @@ J  15.0          8         390.0  ...          70     usa         amc ambassador
     </aside>
     
 
-### 비공통 컬럼명(공통값 기준) (inner 병합)
+### 비공통 컬럼(공통값 기준) (inner 병합)
 
 ```python
 print(df1)
@@ -4369,4 +4369,391 @@ Index(['K', 'S'], dtype='object')
 
 </aside>
 
-### 비공통 컬럼명(outer 병합)
+### 공통 컬럼 (outer 병합)
+
+```python
+# 원본 데이터
+
+print(df1)
+'''
+  x1  x2
+0  A   1
+1  B   2
+2  C   3
+'''
+print(df2)
+'''
+  x1 x3  x4
+0  A  T  T1
+1  B  F  F1
+2  D  T  T1
+'''
+```
+
+```python
+new_df = pd.merge(df1, df2, how="left", on="x1")
+print(new_df)
+'''
+  x1  x2   x3   x4
+0  A   1    T   T1
+1  B   2    F   F1
+2  C   3  NaN  NaN     
+'''
+```
+
+<aside>
+💡 how=”left” : 왼쪽에 명시된 df의 공통컬럼 행이 모두 나오도록 병합
+df2에는 C값이 없으므로 x3, x4 컬럼에는 NaN값이 저장된다.
+
+</aside>
+
+```python
+new_df = pd.merge(df1, df2, how="right", on="x1")
+print(new_df)
+'''
+  x1   x2 x3  x4
+0  A  1.0  T  T1
+1  B  2.0  F  F1
+2  D  NaN  T  T1
+'''
+```
+
+<aside>
+💡 오른쪽에 명시된 df2의 공통컬럼 행이 모두 나오도록 병합
+df1에는 D값이 없으므로 x2에는 NaN값이 저장된다.
+
+</aside>
+
+```python
+new_df = pd.merge(df1, df2, how="outer", on="x1")
+print(new_df)
+'''
+  x1   x2   x3   x4
+0  A  1.0    T   T1
+1  B  2.0    F   F1
+2  C  3.0  NaN  NaN
+3  D  NaN    T   T1
+'''
+```
+
+<aside>
+💡 병합된 두 df의 공통컬럼 모든 행의 값이 나오도록 병합
+각각 값이 없는 행에는 NaN값이 저장된다.
+
+</aside>
+
+### 비공통 컬럼명 (outer 병합)
+
+```python
+# 원본 데이터
+
+print(df1)
+'''
+  x1  x2
+0  A   1
+1  B   2
+2  C   3
+'''
+print(df2)
+'''
+  y1 y3  y4
+0  A  T  T1
+1  B  F  F1
+2  D  T  T1
+'''
+'''
+
+```
+
+```python
+new_df = pd.merge(df1, df2, how='left', left_on='x1', right_on='y1')
+print(new_df)
+'''
+  x1  x2   y1   y3   y4
+0  A   1    A    T   T1
+1  B   2    B    F   F1
+2  C   3  NaN  NaN  NaN
+'''
+```
+
+<aside>
+💡 df1 x1 컬럼의 행 값이 모두 나오도록 병합
+df2는 C값을 가지고 있지 않으므로 y1, y3, y4컬럼은 NaN값을 저장한다.
+
+</aside>
+
+```python
+new_df = pd.merge(df1, df2, how='right', left_on='x1', right_on='y1')
+print(new_df)
+'''
+    x1   x2 y1 y3  y4
+0    A  1.0  A  T  T1
+1    B  2.0  B  F  F1
+2  NaN  NaN  D  T  T1
+'''
+```
+
+<aside>
+💡 df2 y1 컬럼의 행 값이 모두 나오도록 병합
+df1는 D값을 가지고 있지 않으므로 x1, x2 컬럼은 NaN값을 저장한다.
+
+</aside>
+
+```python
+new_df = pd.merge(df1, df2, how='outer', left_on='x1', right_on='y1')
+print(new_df)
+'''
+    x1   x2   y1   y3   y4
+0    A  1.0    A    T   T1
+1    B  2.0    B    F   F1
+2    C  3.0  NaN  NaN  NaN
+3  NaN  NaN    D    T   T1
+'''
+```
+
+<aside>
+💡 df1의 x1 컬럼과 df2의 y1 컬럼의 모든 행값이 나오도록 병합
+각각 없는 값들은 NaN으로 저장한다.
+
+</aside>
+
+## group by
+
+### 기본 : df. groupby(그룹 컬럼명)[선택컬럼].그룹함수
+
+- **부서별 salary의 합**
+    
+    ```python
+    # 원본 데이터
+    '''
+      empno ename   sal     hireday  deptno
+    0    A1   홍길동  1000  2019/01/02      10
+    1    A2   유관순  1500  2018/01/02      20
+    2    A3   안중근  2300  2017/01/02      10
+    3    A4   강감찬  3400  2016/01/02      30
+    4    A5   이순신  4500  2015/01/02      10
+    '''
+    ```
+    
+    ```python
+    # 부서별 salary의 합
+    
+    xxx = emp.groupby(by='deptno')["sal"].sum()
+    print(xxx)
+    '''
+    deptno
+    10    7800
+    20    1500
+    30    3400
+    Name: sal, dtype: int64
+    '''
+    ```
+    
+- **부서별 salary의 평균**
+    
+    ```python
+    # 원본 데이터
+    '''
+      empno ename   sal     hireday  deptno
+    0    A1   홍길동  1000  2019/01/02      10
+    1    A2   유관순  1500  2018/01/02      20
+    2    A3   안중근  2300  2017/01/02      10
+    3    A4   강감찬  3400  2016/01/02      30
+    4    A5   이순신  4500  2015/01/02      10
+    '''
+    ```
+    
+    ```python
+    # 부서별 salary의 평균
+    
+    xxx = emp.groupby(by='deptno')["sal"].mean()
+    print(xxx)
+    '''
+    deptno
+    10    2600.0
+    20    1500.0
+    30    3400.0
+    Name: sal, dtype: float64
+    '''
+    ```
+    
+- **부서별 salary의 최대, 최소, 개수**
+    
+    ```python
+    # 원본 데이터
+    '''
+      empno ename   sal     hireday  deptno
+    0    A1   홍길동  1000  2019/01/02      10
+    1    A2   유관순  1500  2018/01/02      20
+    2    A3   안중근  2300  2017/01/02      10
+    3    A4   강감찬  3400  2016/01/02      30
+    4    A5   이순신  4500  2015/01/02      10
+    '''
+    ```
+    
+    ```python
+    # 부서별 salary의 최대, 최소, 개수
+    
+    xxx = emp.groupby(by='deptno')["sal"].max()
+    xxx = emp.groupby(by='deptno')["sal"].min()
+    xxx = emp.groupby(by='deptno')["sal"].count()
+    
+    print(pd.DataFrame(xxx))
+    '''
+            sal     <- 컬럼이 하나인 데이터프레임으로 출력됨
+    deptno     
+    10        3
+    20        1
+    30        1
+    '''
+    ```
+    
+
+### apply 또는 agg 또는 aggregate 함수
+
+- **사용자 지정 함수 적용**
+    
+    ```python
+    # 함수 만들기
+    
+    def my_mean(v):
+        print(">>\n", v) #deptno별 sal 값이 전달됨
+        n = len(v)
+        sum=0
+        for k in v:
+            sum += k
+        return sum/n
+    ```
+    
+    ```python
+    xxx = emp.groupby(by='deptno')["sal"].agg(my_mean)
+    print(xxx)
+    '''
+    deptno
+    10    2600.0
+    20    1500.0
+    30    3400.0
+    Name: sal, dtype: float64
+    '''
+    ```
+    
+- **멀티 함수 적용**
+    
+    ```python
+    xxx = emp.groupby(by='deptno')["sal"].agg([np.sum, np.mean, np.max, np.size])
+    xxx = emp.groupby(by='deptno')["sal"].agg(["sum", "mean", "max", "count"])
+    print(xxx)
+    '''
+             sum    mean  amax  size
+    deptno                          
+    10      7800  2600.0  4500     3
+    20      1500  1500.0  1500     1
+    30      3400  3400.0  3400     1
+    
+             sum    mean   max  count
+    deptno                           
+    10      7800  2600.0  4500      3
+    20      1500  1500.0  1500      1
+    30      3400  3400.0  3400      1
+    '''
+    ```
+    
+- **여러 컬럼에 다양한 함수 적용**
+    
+    ```python
+    xxx = emp.groupby(by="deptno").agg({
+        "sal":[sum,max,min],
+        "deptno":["count"]
+    })
+    print(xxx)
+    '''
+             sal             deptno
+             sum   max   min  count
+    deptno                         
+    10      7800  4500  1000      3
+    20      1500  1500  1500      1
+    30      3400  3400  3400      1
+    '''
+    ```
+    
+
+## csv 파일 읽기
+
+### csv 파일 읽기 기본
+
+```python
+df = pd.read_csv("./data/scientists.csv")
+print(df)
+```
+
+<aside>
+💡 경로 제일 앞의 . 은 현재 디렉토리
+
+</aside>
+
+### 특정 컬럼을 인덱스로 변경
+
+```python
+df = pd.read_csv("./data/scientists.csv", index_col='Name')
+df = pd.read_csv("./data/scientists.csv", index_col=0)
+print(df)
+'''
+                            Born        Died  Age          Occupation
+Name                                                                 
+Rosaline Franklin     1920-07-25  1958-04-16   37             Chemist
+William Gosset        1876-06-13  1937-10-16   61        Statistician
+Florence Nightingale  1820-05-12  1910-08-13   90               Nurse
+Marie Curie           1867-11-07  1934-07-04   66             Chemist
+Rachel Carson         1907-05-27  1964-04-14   56           Biologist
+John Snow             1813-03-15  1858-06-16   45           Physician
+Alan Turing           1912-06-23  1954-06-07   41  Computer Scientist
+Johann Gauss          1777-04-30  1855-02-23   77       Mathematician
+'''
+```
+
+### 컬럼명 변경
+
+```python
+df = pd.read_csv("./data/scientists.csv", header=0,
+                 names=['name','born','died','age','occupation'])
+print(df)
+```
+
+### 컬럼 선택해서 읽어오기
+
+```python
+df = pd.read_csv("./data/scientists.csv", usecols=['Name', 'Age']) 
+print(df)
+```
+
+<aside>
+💡 명시한 컬럼 순서가 아닌 원본 csv에 있는 컬럼 순서대로 출력된다.
+
+</aside>
+
+### 행 선택해서 읽어오기
+
+```python
+df = pd.read_csv("./data/scientists.csv", nrows=3) 
+# 보고싶은 행의 개수
+print(df)
+```
+
+### , 아닌 임의의 구분자로 읽어오기
+
+```python
+df = pd.read_csv("./data/piped.csv", sep="|",index_col=0)
+print(df)
+'''
+   Unnamed: 0       Date   Open   High    Low  Close   Volume
+0           0  7/21/2014  83.46  83.53  81.81  81.93  2359300
+1           1  7/18/2014  83.30  83.40  82.52  83.35  4020800
+2           2  7/17/2014  84.35  84.63  83.33  83.63  1974000
+'''
+```
+
+### csv 파일로 저장
+
+```python
+df.to_csv("./data/piped_copy.csv")
+```
