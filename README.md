@@ -1,6 +1,6 @@
 # **Git / GitHub**
 
-## Git 이란?
+## Git 개요
  * 분산버전관리시스템(DVCS)
  * 로컬에서의 버전 기록, 관리
  * 원격 저장소를 활용하여 협업
@@ -63,8 +63,42 @@
     ```git
     git remote add origin https://github.com/kimsh0710/TIL.git
     ```
+    `-> origin : GitHub 기본 원격저장소`
+
 3. 원격저장소로 push
     ```git
     git push origin main
     ```
 4. GitHub에 저장되었는지 확인
+
+
+---
+## 이 외 참고할 명령어
+1. 원격저장소 목록 확인
+    ```git
+    git remote -v
+    ```
+
+2. 지정한 원격저장소(origin) 삭제
+    ```git
+    git remote rm origin
+    ```
+
+3. add 실행 취소 하고 싶을 때
+    ```git
+    restore
+    ```
+---
+## 이슈 해결
+❗이슈 : Git Repository에 있었던 프로젝트를 다 지워버리고 새로운 프로젝트를 push하려고 할 때
+    ```git
+    ! [rejected] master -> master (fetch first) error: failed to push some refs to 'https://github.com/xxx/test.git'
+    ```
+
+💡해결
+
+    
+    git push origin +master
+    
+
+
