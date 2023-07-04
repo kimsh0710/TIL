@@ -382,7 +382,7 @@ daum
 
 </aside>
 
-### BeautifulSoupd으로 필요한 데이터 추출
+### BeautifulSoup으로 필요한 데이터 추출
 
 - 원본
 
@@ -522,4 +522,63 @@ soup2.body.h1
 
 ## 이미지 추출
 
-### 이미지 한개 추출
+body > div.pages-home__container > div.photos-home-none__container-main.photos-home-none__container-main--with-sidebar > aside > img
+
+```python
+import requests
+from bs4 import BeautifulSoup
+import os
+
+# URL(주소)에서 이미지 주소 추출
+
+def get_image_url(url):
+	html_image_url = requests.get(url).text
+	soup_image_url = BeautifulSoup(html_image_url, "lxml")
+	image_elements = soup_image_url.select('img')
+	
+	if(image_elements != None):
+		image_urls = []
+		for image_element in image_elements:
+			image_urls.append(image_element.get('src'))
+		return image_urls
+	else:
+		return None
+
+# 폴더를 지정해 이미지 주소에서 이미지 내려받기
+
+def download_image(img_folder, img_url):
+	if (img_url != None):
+		html_image = requests.get(img_url)
+		imageFile = open(os.path.join(img_folder, os.path.basename(img_url)),'wb')
+		# os.path.join() : 두 인자값을 결합하여 새로운 경로 구성하는데 사용됨
+		# img.folder :  이미지 파일을 저장할 폴더의 경로
+		# ps.path.basename(img_url) : 이미지 URL의 파일 이름만 추출
+		# wb : 파일을 바이너리 쓰기 모드로 열겠다. (이미지 추출시 필요)
+		
+		# 1000000바이트를 나누어 추출하기
+		chunk_size = 1000000
+		for chunk in html_image.iter_content(chunk_size):
+			imageFile.write(chunk)
+		imageFile.close()
+		print("이미지 파일명: '{0}'. 내려받기 완료!".format(os.path.basename(img_url)))
+		
+		else:
+        print("내려받을 이미지가 없습니다.")
+
+# 웹사이트의 주소 지정
+reshot_url = 'https://reshot.com/search/animal'
+
+figure_folder = 'C:\JupyterTest\download'
+
+reshot_image_urls = get_image_url(reshot_url)
+
+num_of_download_image = 7
+
+for k in range(num_of_download_image):
+    download_image(figure_folder,reshot_image_urls[k])
+print("==================================")
+print("선택한 모든 이미지 내려받기 완료!")
+```
+
+
+done
