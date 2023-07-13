@@ -99,7 +99,18 @@
 💡해결
 
     
-    git push origin +master
+    git push origin +master  
+
+
+
+❗이슈 : 로컬폴더 01.SQL를 git init한 상태에서 01.SQL의 하위 폴더인 Oracle폴더의 하위 폴더인 Oracle_workshop폴더를 add 하고 싶을 때 
+
+
+💡해결
+
+    
+    git add Oracle/Oracle_workshop
+
     
 
 
