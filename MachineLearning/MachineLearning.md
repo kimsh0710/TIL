@@ -277,3 +277,731 @@
 - 내장 예제 데이터셋 구성
     
     ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%208.png)
+    
+
+# iris 데이터 분류 예측 프로세스 실습
+
+## 예측 전
+
+- 목적 : 붓꽃 데이터 세트는 꽃잎의 길이와 너비, 꽃받침의 길이와 너비 피처
+(Feature)을 기반으로 꽃의 품종을 예측
+- Feature : Sepal length, Sepal width, Petal length, Petal width
+- Label :  iris setosa, iris versicolor, iris virginica
+- 학습데이터
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%209.png)
+    
+- 테스트 데이터
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2010.png)
+    
+- 분류 예측 프로세스
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2011.png)
+    
+    - 데이터 세트 분리 : 데이터를 training data와 test data로 분리
+    - 모델 학습 : training data를 기반으로 ML 알고리즘을 적용하여 모델을 학습
+    - 예측 수행 : 학습된 ML 모델을 이용해 test data의 분류를 예측
+    - 평가 : 이렇게 예측된 결과값과 test data의 실제 결괏값을 비교해 ML 성모델 성능을 평가
+
+## 예측
+
+### **데이터 세트를 로딩**
+
+- **사이킷런에 필요한 모듈 로딩**
+    
+    ```python
+    from sklearn.datasets import load_iris
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.model_selection import train_test_split
+    ```
+    
+- **데이터셋 로딩 & 데이터 정보 확인**
+    
+    ```python
+    # 붓꽃 데이터 세트를 로딩
+    iris = load_iris()
+    
+    # dir()는 객체가 어떤 변수와 메서드를 가지고 있는지 나열함
+    print(type(dir(iris))) 
+    
+    # 메서드 확인
+    print(iris.keys())
+    
+    # shape는 배열의 형상 정보를 출력
+    print(iris_data.shape)
+    
+    # 각 label의 이름
+    print(iris.target_names)
+    
+    # 각 feature의 이름
+    print(iris.feature_names)
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> <class 'list'>
+    dict_keys(['data', 'target', 'frame', 'target_names', 'DESCR', 'feature_names', 'filename', 'data_module'])
+    (150, 4)
+    ['setosa' 'versicolor' 'virginica']
+    ['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)']
+    
+    </aside>
+    
+
+### **DataFrame 자료형으로 변환**
+
+```python
+import pandas as pd
+
+# iris.data는 iris 데이터 세트에서 피처(feature)만으로 된 데이터를 numpy로 가지고 있다.
+iris_data = iris.data
+
+# iris.target은 iris 데이터 세트에서 레이블(결정 값) 데이터를 numpy로 가지고 있다.
+# iris 데이터 세트에서 피처들에 해당하는 열의 이름
+iris_label = iris.target
+print('iris target값 :', iris_label)
+print('iris target명 :', iris.target_names)
+
+# iris 데이터 세트를 자세히 보기 위해 DataFrame으로 변환
+iris_df = pd.DataFrame(data=iris_data, columns=iris.feature_names)
+iris_df['label'] = iris.target
+iris_df.head(3)
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> iris feature 데이터 값 :
+ [[5.1 3.5 1.4 0.2]
+ [4.9 3.  1.4 0.2]
+ [4.7 3.2 1.3 0.2]
+ [4.6 3.1 1.5 0.2]
+…
+[6.7 3.  5.2 2.3]
+ [6.3 2.5 5.  1.9]
+ [6.5 3.  5.2 2. ]
+ [6.2 3.4 5.4 2.3]
+ [5.9 3.  5.1 1.8]]
+
+iris target 데이터 값 : [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0  0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2]
+
+iris target명 : ['setosa' 'versicolor' 'virginica']
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2012.png)
+
+</aside>
+
+### **train, test 데이터셋 분리**
+
+학습용 데이터와 테스트용 데이터는 반드시 분리해야 한다. 학습 데이터로 학습된 모델이 얼마나 뛰어난 성능을 가지는지 평가하려면 테스트 데이터 세트가 필요하기 때문.
+
+```python
+X_train, X_test, y_train, y_test = train_test_split(iris_data, iris_label, test_size=0.2, random_state=11)
+
+print('X_train 개수: ', len(X_train),', X_test 개수: ', len(X_test))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> X_train 개수:  120 , X_test 개수:  30
+
+</aside>
+
+- 문제지 : 머신러닝 모델에게 입력되는 데이터. **feature**라고 부르기도 한다. 변수 이름으로는 `X`를 많이 사용한다.
+- 정답지 : 머신러닝 모델이 맞혀야 하는 데이터. **label** 또는 **target**이라고 부르기도 한다. 변수 이름으로는 `y`를 많이 사용한다.
+- 첫 번째 파라미터 iris_data : 피처(Feature) 데이터 세트
+- 두 번째 파라미터 iris_label : 레이블(Label) 데이터 세트
+- test_size : 전체 데이터 세트 중 테스트 데이터 세트의 비율
+- random_state :  호출할 때마다 같은 학습/테스트용 데이터 세트를 생성하기 위해 주어지는 난수 발생 값
+
+### ****테스트 데이터 세트로 학습(Train) 수행****
+
+- 예측은 반드시 학습 데이터가 아닌 다른 데이터를 이용해야 하며, 일반적으로 테스트 데이터 세트를 이용
+- DecisionTreeClassifier 객체의 predict( ) 메서드에 테스트용 피처 데이터 세트를 입력해 호출하면 학습된 모델 기반에서 테스트 데이터 세트에 대한 예측값을 반환하게 된다.
+
+```python
+# Decision Tree 사용하기
+# DecisionTreeClassifier 객체 생성
+dt_clf = DecisionTreeClassifier(random_state=11)
+
+# dt_clf 의 type 확인
+print(dt_clf._estimator_type)
+
+# 학습수행
+dt_clf.fit(X_train, y_train)
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> classifier
+
+DecisionTreeClassifier(random_state=11)
+
+</aside>
+
+### **테스트 데이터 세트로 예측(Predict) 수행**
+
+```python
+# 학습이 완료된 DecisionTreeClassifier 객체에서 테스트 데이터 세트로 예측 수행
+pred = dt_clf.predict(X_test)
+print(pred)
+
+from sklearn.metrics import classification_report
+print(classification_report(y_test, pred))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> [2 2 1 1 2 0 1 0 0 1 1 1 1 2 2 0 2 1 2 2 1 0 0 1 0 0 2 1 0 1]
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00         9
+           1       0.83      1.00      0.91        10
+           2       1.00      0.82      0.90        11
+
+    accuracy                           0.93        30
+   macro avg       0.94      0.94      0.94        30
+weighted avg       0.94      0.93      0.93        30
+
+</aside>
+
+### **예측 정확도 평가**
+
+- 정확도는 예측 결과가 실제 레이블 값과 얼마나 정확하게 맞는지를 평가하는 지표
+- 사이킷런은 정확도 측정을 위해 accuracy_score( ) 함수를 제공
+- 첫 번째 파라미터 : 실제 레이블 데이터 세트
+- 두 번째 파라미터 : 예측 레이블 데이터 세트
+
+```python
+from sklearn.metrics import accuracy_score
+print('예측 정확도: {0:.4f}'.format(accuracy_score(y_test,pred)))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 예측 정확도: 0.9333
+
+</aside>
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2013.png)
+
+# 교차 검증
+
+## 교차 검증이란?
+
+- 학습 데이터세트를 다시 `학습 데이터세트` / `검증 데이터세트`로 나눔
+    - 학습 데이터 세트 : 학습을 위한 데이터
+    - 검증 데이터 세트 : 학습된 모델의 성능을 일차 평가
+    - 평가 데이터 세트 : 모든 학습/검증 과정이 완료된 후 최종적으로 성능을 평가
+- 검증 데이터 세트가 필요한 이유?
+    - train 데이터에 대해서 발생하는 과적합(Overfitting)을 방지하기 위해
+    - train 데이터에만 열심히 학습 시켰는데, 막상 test 데이터에서는 맞지 않을 수 있기 때문에 우선 검증 데이터로 평가
+    - 교차검증은 검증을 여러번 해서 어느 데이터에서나 잘 맞는지 확인
+
+## K 폴드 교차 검증
+
+- 가장 보편적인 교차 검증 기법
+- K개의 데이터 폴드 세트를 만들어서 K번 만큼 각 폴트 세트에 학습과 검증 평가를 반복적으로 수행
+- 각 검증마다 Test Fold를 다르게 지정하여 성능을 측정
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2014.png)
+    
+    - K 폴드 교차 검증 과정 자세히
+        1. 전체 Dataset이 Train Dataset과 Test Dataset으로 주어집니다.
+        2. Train Dataset을 나눌 *k*를 지정하고, 가급적 균등하게 그리고 랜덤으로 *k*개의 데이터 Fold로 나누되 (*k* - 1)개의 Fold는 Test용으로 1개는 Validation용으로 지정합니다.
+        3. 튜닝하고자 하는 Hyperparameters를 정합니다.
+        4. 정해진 Hyperparameters에 대하여 각각 검증하고자 하는 범위와 실험세트(요인 수준)를 정합니다.
+        5. *k*개로 나누어진 Train Dataset 데이터 그룹에 대하여 서로 다른 Validation Fold를 지정하면서 아래의 오퍼레이션을 *k*번 반복합니다.
+        · (*k* - 1)개의 Train Fold에 대하여 학습을 시킵니다.
+        · 나머지 1개의 Validation Fold에 대하여 성능을 측정합니다. 즉, 앞서 학습된 파라미터를 이용하여 Validation Fold를 이용하여 결과를 얻습니다.
+        6. 5번에서 얻은 각 Hyperparamer의 *k*개의 결과에 대한 평균을 계산하여 이 평균값을 각 Hyperaparameter로 지정합니다.
+        7. 마지막으로, 6번에서 얻은 Hyperparameters를 적용하여 Test Data에 대하여 모델을 1회 평가합니다.
+
+## **Stratified K 폴드**
+
+- 데이터 레이블의 분포가 불균형할 경우, 원본 데이터와 유사한 레이블 값의 분포를 학습/테스트 세트에도 유지할 필요가 있다.
+- 이렇게 분포를 유지하게 만드는 것을 stratify로 수행할 수 있으며, 특히 데이터의 개수가 적을 시에 이 과정이 필요하다.
+- K 폴드가 레이블 데이터 집합이 원본 데이터 집합의 레이블 분포를 학습 및 테스트 세트에 제대로 분배하지 못하는 경우의 문제를 해결해 준다.
+- Stratified K 폴드는 원본 데이터의 레이블 분포를 먼저 고려한 뒤 이 분포와 동일하게 학습과 검증 데이터 세트를 분배한다.
+
+## GridSearchCV
+
+- 머신러닝에서 모델의 성능향상을 위해 쓰이는 기법
+- 사용자가 직접 모델의 하이퍼 파라미터의 값을 리스트로 입력하면 값에 대한 경우의 수마다 예측 성능을 측정 평가하여 비교하면서 최적의 하이퍼 파라미터 값을 찾는 과정
+- 예시
+    
+    ```python
+    parameters = {'max_depth':[1, 2, 3], 'min_samples_split':[2,3]}
+    ```
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2015.png)
+    
+    ⇒ 파라미터의 집합을 만들고 이를 순차적으로 적용하면서 최적화를 수행
+    
+- 주요 파라미터
+    - 하이퍼파라미터란 : 사용자의 입력값, 즉 우리가 설정 가능한 입력값
+    - estimator : 예측기 객체 (Classifier, Regressor, Pipeline 등)
+    - param_grid : 사용할 파라미터가 정의된 dictionary
+    - scoring : 예측 성능을 측정할 평가 방법을 지정
+    - cv : 교차검증 개수 (KFold 객체를 넣을 수도 있다.)
+    - refit : 디폴트가 True이며 True로 생성 시 가장 최적의 하이퍼 파라미터를 찾은 뒤 입력된 esitmator 객체를 해당 하이퍼 파라미터로 재학습
+
+## ****cross_val_score( )****
+
+- 교차 검증을 좀 더 편리하게 수행할 수 있게 해주는 API
+- KFold로 데이터를 학습하고 예측
+- K 폴드의 예측 프로세스를 한번에 수행
+- 선언 형태
+    
+    ```python
+    cross_val_score(estimator, X, y=None, scoring=None, cv=None, 
+    			n_jobs=1, verbose=0, fit_params=None, pre_dispatch='2*n_jobs')
+    ```
+    
+    - **esmitator** :  사이킷런의 분류 알고리즘 클래스인 Classifier 또는 회귀 알고리즘 클래스인 Regressor를 의미
+    - **X** : 피처 데이터 세트
+    - **y** : 레이블 데이터 세트
+    - **scoring** : 예측 성능 평가 지표를 기술
+    - **cv** : 교차 검증 폴드 수
+- cross_val_score( ) 수행 후 반환 값은 scoring 파라미터로 지정된 성능 지표 측정값을 배열 형태로 반환
+- classifier가 입력되면 Stratified K 폴드 방식으로 레이블값의 분포에 따라 학습/테스트 세트를 분할
+- 회귀인 경우에는 Stratified K 폴드 방식으로 분할할 수 없으므로 K 폴드 방식으로 분할
+
+# iris 데이터 교차 검증 실습
+
+## K 폴드
+
+- K 폴드 교차 검증 프로세스를 구현하기 위해 KFold와 StratifiedKFold 클래스를 제공
+- KFold 클래스를 이용해 붓꽃 데이터 세트를 교차 검증하고 예측 정확도를 알아본다.
+
+### 데이터 로드
+
+```python
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import KFold
+import numpy as np
+
+iris = load_iris()
+features = iris.data
+label = iris.target
+dt_clf = DecisionTreeClassifier(random_state=156)
+```
+
+### k개의 폴드 세트로 분리하는 KFold 객체 생성
+
+```python
+kfold = KFold(n_splits=5)
+cv_accuracy = []
+print('붓꽃 데이터세트 크기 :', features.shape[0])
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 붓꽃 데이터세트 크기 : 150
+
+</aside>
+
+현재 붓꽃 데이터 세트의 크기가 150이다.
+
+k=5니까 5분할해서 학습 데이터세트 크기는 120, 검증 데이터세트 크기는 30
+
+### 전체 붓꽃 데이터를 5개의 폴드 데이터 세트로 분리
+
+- 이제 생성된 KFold 객체의 split( )을 호출해 전체 붓꽃 데이터를 5개의 폴드 데이터 세트로 분리
+- KFold 객체는 split( )을 호출하면 학습용/검증용 데이터로 분할할 수 있는 인덱스를 반환한다.
+
+```python
+n_iter = 0
+
+# KFold객체의 split() 호출하면 폴드 별 학습용, 검증용 테스트의 로우 인덱스를 array로 반환
+
+for train_index, test_index in kfold.split(features): # features = iris.data
+    # kfold.split()으로 반환된 인덱스를 이용하여 학습용, 검증용 데이터 추출
+    X_train, X_test = features[train_index], features[test_index]
+    y_train, y_test = label[train_index], label[test_index]
+    # 학습 및 예측
+    dt_clf.fit(X_train, y_train)
+    pred = dt_clf.predict(X_test)
+    n_iter += 1
+    # 반복 시 마다 정확도 측정
+    accuracy = np.round(accuracy_score(y_test,pred),4)
+    train_size=X_train.shape[0]
+    test_size=X_test.shape[0]
+    print('\n#{0} 교차 검증 정확도:{1}, 학습데이터 크기:{2},  검증데이터 크기:{3}'
+         .format(n_iter, accuracy, train_size, test_size))
+    print('#{0} 검증 세트 인덱스{1}'.format(n_iter,test_index))
+    cv_accuracy.append(accuracy)
+    
+# 개별 iteration별 정확도를 합하여 평균 정확도 계산
+print('\n## 평균 검증 정확도', np.mean(cv_accuracy))
+# 평균값을 각 Hyperaparameter로 지정
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> #1 교차 검증 정확도:1.0, 학습데이터 크기:120,  검증데이터 크기:30
+#1 검증 세트 인덱스[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+ 24 25 26 27 28 29]
+
+#2 교차 검증 정확도:0.9667, 학습데이터 크기:120,  검증데이터 크기:30
+#2 검증 세트 인덱스[30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53
+ 54 55 56 57 58 59]
+
+#3 교차 검증 정확도:0.8667, 학습데이터 크기:120,  검증데이터 크기:30
+#3 검증 세트 인덱스[60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83
+ 84 85 86 87 88 89]
+
+#4 교차 검증 정확도:0.9333, 학습데이터 크기:120,  검증데이터 크기:30
+#4 검증 세트 인덱스[ 90  91  92  93  94  95  96  97  98  99 100 101 102 103 104 105 106 107
+ 108 109 110 111 112 113 114 115 116 117 118 119]
+
+#5 교차 검증 정확도:0.7333, 학습데이터 크기:120,  검증데이터 크기:30
+#5 검증 세트 인덱스[120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137
+ 138 139 140 141 142 143 144 145 146 147 148 149]
+
+## 평균 검증 정확도 0.9
+
+</aside>
+
+## ****Stratified K 폴드****
+
+### 데이터 로드
+
+```python
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import KFold
+import numpy as np
+import pandas as pd
+
+iris = load_iris()
+
+iris_df = pd.DataFrame(data = iris.data, columns=iris.feature_names)
+iris_df['label'] = iris.target
+iris_df['label'].value_counts()
+print(iris_df)
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 0    50
+1    50
+2    50
+Name: label, dtype: int64
+
+```
+     sepal length (cm)  sepal width (cm)  petal length (cm)  petal width (cm)  label
+0                  5.1               3.5                1.4               0.2      0
+1                  4.9               3.0                1.4               0.2      0
+2                  4.7               3.2                1.3               0.2      0
+3                  4.6               3.1                1.5               0.2      0
+4                  5.0               3.6                1.4               0.2      0
+..                 ...               ...                ...               ...    ...
+145                6.7               3.0                5.2               2.3      2
+146                6.3               2.5                5.0               1.9      2
+147                6.5               3.0                5.2               2.0      2
+148                6.2               3.4                5.4               2.3      2
+149                5.9               3.0                5.1               1.8      2
+
+[150 rows x 5 columns]
+```
+
+</aside>
+
+### ****Stratified K 폴드 객체 생성 & 3개의 데이터 폴드 세트 생성****
+
+- 이슈가 발생하는 현상을 도출하기 위해 3개의 폴드 세트를 KFold로 생성하고, 각 교차 검증 시마다 생성되는 학습/검증 레이블 데이터 값의 분포도를 확인해본다.
+
+```python
+kfold = KFold(n_splits=3)
+
+# kfol.split(X)는 폴드 세트를 3번 반복할 때마다 달라지는 학습/테스트용 데이터 로우 인덱스 번호 반환.
+
+n_iter = 0
+for train_index, test_index in kfold.split(iris_df):
+    n_iter += 1
+    label_train = iris_df['label'].iloc[train_index]
+    label_test = iris_df['label'].iloc[test_index]
+    print('## 교차 검증: {0}'.format(n_iter))
+    print('학습 레이블 데이터 분포:\n', label_train.value_counts())
+    print('검증 레이블 데이터 분포:\n', label_test.value_counts())
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> ## 교차 검증: 1
+학습 레이블 데이터 분포:
+ 1    50
+2    50
+Name: label, dtype: int64
+검증 레이블 데이터 분포:
+ 0    50
+Name: label, dtype: int64
+
+## 교차 검증: 2
+학습 레이블 데이터 분포:
+ 0    50
+2    50
+Name: label, dtype: int64
+검증 레이블 데이터 분포:
+ 1    50
+Name: label, dtype: int64
+
+## 교차 검증: 3
+학습 레이블 데이터 분포:
+ 0    50
+1    50
+Name: label, dtype: int64
+검증 레이블 데이터 분포:
+ 2    50
+Name: label, dtype: int64
+
+</aside>
+
+- 교차 검증 시마다 3개의 폴드 세트로 만들어지는 학습 레이블과 검증 레이블이 완전히 다른 값으로 추출되었다.
+- 예를 들어 첫 번째 교차 검증에서 학습 레이블은 1, 2밖에 없으므로 0의 경우는 전혀 학습하지 못한다. 반대로 검증 레이블은 0밖에 없으므로 학습 모델은 절대 0을 예측하지 못한다.
+- 이런 유형으로 교차 검증 데이터 세트를 분할하면 검증 예측 정확도는 0이 될 수 밖에 없다.
+
+<aside>
+💡 StratifiedKFold는 이렇게 KFold로 분할된 레이블 데이터 세트가 전체 레이블 값의 분포도를 반영하지 못하는 문제를 해결해준다.
+
+StratifiedKFold를 사용하는 방법은 KFold를 사용하는 방법과 거의 비슷하다. 
+
+단 하나 큰 차이는 StratifiedKFold는 레이블 분포도에 따라 학습/검증 데이터를 나누기 때문에 split( )메서드에 인자로 피처 데이터 세트뿐만 아니라 레이블 데이터 세트도 반드시 필요하다.
+
+</aside>
+
+### KFold의 문제 해결
+
+```python
+from sklearn.model_selection import StratifiedKFold
+
+skf = StratifiedKFold(n_splits=3)
+n_iter = 0
+
+for train_index, test_index in skf.split(iris_df, iris_df['label']):
+    n_iter += 1
+    label_train = iris_df['label'].iloc[train_index]
+    label_test = iris_df['label'].iloc[test_index]
+    print('## 교차 검증: {0}'.format(n_iter))
+    print('학습 레이블 데이터 분포:\n', label_train.value_counts())
+    print('검증 레이블 데이터 분호:\n', label_test.value_counts())
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> ## 교차 검증: 1
+학습 레이블 데이터 분포:
+ 2    34
+0    33
+1    33
+Name: label, dtype: int64
+검증 레이블 데이터 분호:
+ 0    17
+1    17
+2    16
+Name: label, dtype: int64
+
+## 교차 검증: 2
+학습 레이블 데이터 분포:
+ 1    34
+0    33
+2    33
+Name: label, dtype: int64
+검증 레이블 데이터 분호:
+ 0    17
+2    17
+1    16
+Name: label, dtype: int64
+
+## 교차 검증: 3
+학습 레이블 데이터 분포:
+ 0    34
+1    33
+2    33
+Name: label, dtype: int64
+검증 레이블 데이터 분호:
+ 1    17
+2    17
+0    16
+Name: label, dtype: int64
+
+</aside>
+
+- 학습 레이블과 검증 레이블 데이터 값의 분포도가 동일하게 할당됐음
+- 
+
+### **train, test 데이터셋 분리 & 예측 정확도 평가**
+
+```python
+df_clf = DecisionTreeClassifier(random_state=156)
+
+skfold = StratifiedKFold(n_splits=3)
+n_iter = 0
+cv_accuracy = []
+
+# StratifiedKFold의 split() 호출시 반드시 레이블 데이터셋도 추가 입력 필요
+for train_index, test_index in skfold.split(features, label):
+    # split()으로 반환된 인덱스를 이용하여 학습용, 검증용 테스트 데이터 추출
+    X_train, X_test = features[train_index], features[test_index]
+    y_train, y_test = label[train_index], label[test_index]
+    # 학습 및 예측
+    dt_clf.fit(X_train, y_train)
+    pred = dt_clf.predict(X_test)
+    
+    #반복시 마다 정확도 측정
+    n_iter += 1
+    accuracy = np.round(accuracy_score(y_test, pred), 4)
+    train_size = X_train.shape[0]
+    test_size = X_test.shape[0]
+    print('\n{0} 교차 검증 정확도 :{1}, 학습 데이터 크기: {2}, 검증 데이터 크기: {3}'
+         .format(n_iter, accuracy, train_size, test_size))
+    print('#{0} 검증 세트 인덱스:{1}'.format(n_iter, test_index))
+    cv_accuracy.append(accuracy)
+    
+# 교차 검증별 정확도 및 평균 정확도 계산
+print('\n## 교차 검증별 정확도:', np.round(cv_accuracy,4))
+print('## 평균 검증 정확도:', np.mean(cv_accuracy))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 1 교차 검증 정확도 :0.98, 학습 데이터 크기: 100, 검증 데이터 크기: 50
+#1 검증 세트 인덱스:[  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  50
+  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66 100 101
+ 102 103 104 105 106 107 108 109 110 111 112 113 114 115]
+
+2 교차 검증 정확도 :0.94, 학습 데이터 크기: 100, 검증 데이터 크기: 50
+#2 검증 세트 인덱스:[ 17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  67
+  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82 116 117 118
+ 119 120 121 122 123 124 125 126 127 128 129 130 131 132]
+
+3 교차 검증 정확도 :0.98, 학습 데이터 크기: 100, 검증 데이터 크기: 50
+#3 검증 세트 인덱스:[ 34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  83  84
+  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99 133 134 135
+ 136 137 138 139 140 141 142 143 144 145 146 147 148 149]
+
+## 교차 검증별 정확도: [0.98 0.94 0.98]
+## 평균 검증 정확도: 0.9666666666666667
+
+</aside>
+
+- 3개의 Stratified K 폴드로 교차 검증한 결과 평균 검증 정확도가 약 96.04%로 측정되었다.
+- Stratified K 폴드의 경우 원본 데이터의 레이블 분포도 특성을 반영한 학습 및 검증 데이터 세트를 만들 수 있으므로 왜곡된 레이블 데이터 세트에서는 반드시 Stratified K 폴드를 이용해 교차 검증해야 한다.
+- **사실, 일반적으로 분류(Classification)에서의 교차 검증은 K 폴드가 아니라 Stratified K 폴드로 분할돼야 한다.**
+
+## ****cross_val_score( )****
+
+```python
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import cross_val_score, cross_validate
+from sklearn.datasets import load_iris
+
+iris_data = load_iris()
+dt_clf = DecisionTreeClassifier(random_state=156)
+
+data = iris_data.data
+label = iris_data.target
+
+# 성능 지표는 정확도(accuracy), 교차 검증 세트는 3개
+scores = cross_val_score(dt_clf, data, label, scoring='accuracy', cv=3)
+print('교차 검증별 정확도:', np.round(scores,4))
+print('평균 검증 정확도:', np.round(np.mean(scores),4))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 교차 검증별 정확도: [0.98 0.94 0.98]
+평균 검증 정확도: 0.9667
+
+</aside>
+
+- cv로 지정된 횟수만큼 scoring 파라미터로 지정된 평가 지표로 평가 결괏값을 배열로 반환 ⇒ 일반적으로 이를 평균해 평가 수치로 사용
+- 내부에서 Estimator를 학습(fit), 예측(predict), 평가(evaluation)시켜주므로 간단하게 교차 검증을 수행할 수 있다.
+
+## GridSearchCV
+
+### 데이터 로드 & 학습 및 테스트 데이터 분리
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import GridSearchCV
+
+# 데이터를 로딩하고 학습데이터와 테스트 데이터 분리
+iris = load_iris()
+X_train, X_test, y_train, y_test = train_test_split(iris_data.data, iris_data.target, test_size=0.2, random_state=121)
+dtree = DecisionTreeClassifier()
+
+### parameter 들을 dictionary 형태로 설정
+parameters = {'max_depth':[1,2,3], 'min_samples_split':[2,3]}
+# max_depth는 결정 트리의 최대 깊이를 제한하는 파라미터 => 작은 값으로 설정하면 모델이 단순화되어 과적합을 줄일 수 있고, 큰 값으로 설정하면 복잡한 모델이 만들어질 수 있음.
+# min_samples_split은 노드를 분할하기 위해 필요한 최소 샘플 수를 제한
+
+```
+
+- 테스트할 하이퍼 파라미터 세트는 딕셔너리 형태로
+- 하이퍼 파라미터의 명칭은 문자열 Key 값으로
+- 하이퍼 파라미터의 값은 리스트 형으로 설정
+
+### 테스트 수행 설정 & 학습
+
+- 학습 데이터 세트를 GridSearchCV 객체의 fit(학습 데이터 세트) 메서드에 인자로 입력한다.
+- 학습 데이터를 cv에 기술된 폴딩 세트로 분할해 param_grid에 기술된 하이퍼 파라미터를 순차적으로 변경하면서 학습/평가를 수행하고 그 결과를 cv_result 속성에 기록한다.
+- cv_result 는 gridsearchcv의 결과 세트로서 딕셔너리 형태로 key값과 리스트 형태의 value값을 가진다.
+
+```python
+import pandas as pd
+
+# param_grid의 하이퍼 파라미터들을 3개의 train, test set fold로 나누어서 테스트 수행 설정.
+
+grid_dtree = GridSearchCV(dtree, param_grid=parameters, cv=3, refit=True)
+
+# iris train 데이터로 param_gird의 하이퍼 파라미터들을 순차적으로 학습/평가
+grid_dtree.fit(X_train, y_train)
+
+# GridSearchCV 결과를 추출하여 DataFrame으로 변환
+scores_df = pd.DataFrame(grid_dtree.cv_results_)
+scores_df[['params', 'mean_test_score', 'rank_test_score', \
+         'split0_test_score', 'split1_test_score', 'split2_test_score']]
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2016.png)
+
+</aside>
+
+- 총 6개의 결과 ⇒ 하이퍼 파라미터 max_depth와 min_samples_split을 순차적으로 총 6번 변경하면서 학습 및 평가를 수행했음을 나타낸다.
+- 맨 마지막에서 두 번째 행을 보면 평가한 결과 예측 성능이 1위라는 의미
+- split0_test_score, split1_test_score, split2_test_score는 CV가 3인 경우, 즉 3개의 폴딩 세트에서 각각 테스트한 성능 수치
+- mean_test_score는 이 세 개 성능 수치를 평균화한 것
+
+<aside>
+💡
+
+- params 칼럼에는 수행할 때마다 적용된 개별 하이퍼 파라미터 값을 나타낸다.
+- rank_test_score는 하이퍼 파라미터별로 성능이 좋은 score 순위를 나타낸다.
+- mean_test_score는 개별 하이퍼 파라미터별로 CV의 폴딩 테스트 세트에 대해 총 수행한 평가 평균값이다.
+</aside>
+
+### 최적 파라미터 & 최고 정확도 도출
+
+- GridSearchCV 객체의 fit( )을 수행하면 최고 성능을 나타낸 하이퍼 파라미터 값과 그때의 평가 결과 값이 각각 best_params, best_score_속성에 기록된다.
+
+```python
+print('GridSearchCV 최적 파라미터:', grid_dtree.best_params_)
+print('GridSearchCV 최고 정확도:{0:4f}'.format(grid_dtree.best_score_))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> GridSearchCV 최적 파라미터: {'max_depth': 3, 'min_samples_split': 2}
+GridSearchCV 최고 정확도:0.975000
+
+</aside>
+
+```python
+# refit=True로 설정된 GridSearchCV 객체가 fit()를 수행시 학습이 완료된 Estimator를 내포하고 있으므로 predict()을 통해 예측도 가능
+
+pred = grid_dtree.predict(X_test)
+print('테스트 데이터 세트 정확도: {0:.4f}'.format(accuracy_score(y_test,pred)))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 테스트 데이터 세트 정확도: 0.9667
+
+</aside>
+
+<aside>
+💡 일반적으로 학습 데이터를 GridSearchCV를 이용해 최적 하이퍼 파라미터 튜닝을 수행한 뒤에 별도의 테스트 세트에서 이를 평가하는 것이 일반적인 머신러닝 모델 적용 방법이다.
+
+</aside>
