@@ -1005,3 +1005,328 @@ print('테스트 데이터 세트 정확도: {0:.4f}'.format(accuracy_score(y_te
 💡 일반적으로 학습 데이터를 GridSearchCV를 이용해 최적 하이퍼 파라미터 튜닝을 수행한 뒤에 별도의 테스트 세트에서 이를 평가하는 것이 일반적인 머신러닝 모델 적용 방법이다.
 
 </aside>
+
+# 데이터 전처리(Preprocessing)
+
+## 개요
+
+### 데이터 전처리가 필요한 이유
+
+- 결측치 값이 허용되지 않는다.
+    - Null 값이 얼마 없으면 중앙값이나 평균값으로 대체한다.
+    - Null 값이 대다수라면 해당 피쳐값은 드롭하는 것도 좋다.
+    - 중요도가 높은 피처는 유지시킨다.
+- 문자열도 허용되지 않는다.
+    - 문자열이 허용되지 않기 때문에 해당 피처값에 대한 인코딩(숫자로 변환)이 필요하다.
+    - 인코딩은 카테고리형(코드 값)으로 대부분 변환시킨다.
+    - 필요없는 피처는 드롭시킨다.
+
+### 데이터 전처리 종류
+
+- 데이터 클린징
+- 결손값 처리(Null,NaN 처리)
+- 데이터 인코딩(레이블, 원-핫 인코딩)
+- 데이터 스케일링
+- 이상치 제거
+- Feature 선택, 추출 및 가공
+
+## 데이터 인코딩
+
+- 대표적인 데이터 인코딩 방식 : Label encoding, One Hot Encoding
+- 숫자의 크고 작음이 있기 때문에 Tree 계열 AL을 제외하면 가중치가 적용되어 문제가 될 수 있음.
+- Label Encoding의 문제점을 해결한 것이 One Hot Encoding
+
+### 레이블 인코딩(Label Encoding)
+
+- 문자열로 구성되어 있는 items 데이터를 카테코리화(코드화) 하는 것
+- sklearn의 label encoding은 LabelEncoder Class로 구현함.
+- Label Encoder를 객체로 생성한 후 fit(), transform()을 호출해 레이블 인코딩을 수행
+
+<aside>
+💡 fit(), transform()을 사용하는 목적?
+
+- fit()은 데이터 변환을 위한 기준 정보를 설정 (data set의 max/min 값 설정 등)을 적용해 줌.
+- transform()은 설정된 정보를 이용해 데이터를 변환함.
+
+</aside>
+
+```python
+from sklearn.preprocessing import LabelEncoder
+
+items=['TV', '냉장고', '전자렌지', '컴퓨터', '선풍기', '선풍기', '믹서', '믹서']
+
+# LabelEncoder를 객체로 생성한 후, fit()과 transfor()으로 label 인코딩 수행.
+encoder=LabelEncoder()
+encoder.fit(items)
+labels=encoder.transform(items)
+print('인코딩 변환값:', labels)
+print(type(labels))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 인코딩 변환값: [0 1 4 5 3 3 2 2]
+<class 'numpy.ndarray'>
+
+</aside>
+
+```python
+print('인코딩 클래스:', encoder.classes_)
+print('디코딩 원본 값:', encoder.inverse_transform([4,5,2,0,1,1,3,3]))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 인코딩 클래스: ['TV' '냉장고' '믹서' '선풍기' '전자렌지' '컴퓨터']
+
+디코딩 원본 값: ['전자렌지' '컴퓨터' '믹서' 'TV' '냉장고' '냉장고' '선풍기' '선풍기']
+
+</aside>
+
+- .class_ 속성은 0번부터 순서대로 변환된 인코딩 값에 대한 원본을 가지고 있음
+    
+    ⇒ TV가 0, 냉장고가 1, 믹서가 2, 선풍기가 3, 전제렌지가 4, 컴퓨터가 5로 인코딩되었음.
+    
+- 거꾸로 인코딩 결과를 통해 원본 추적도 가능
+
+### 원-핫 인코딩 (One-Hot Encoding)
+
+- feature 값의 유형에 따라 새로운 feature를 추가해 고유 값에 해당하는 column만 1을 표시. 나머지 column에는 0을 표시하는 방식
+- 즉 행 형태로 되어있는 feature의 고유 값을 열 형태로 차원을 변환함 → 고유값에 해당하는 column에만 1, 나머지 column에는 0을 표시
+- 원-핫 인코딩은 sklearn에서 OneHotEncoder Class로 쉽게 변환 가능
+- 주의할 점
+    - OneHotEncoder로 변환하기 전에 모든 문자열 값이 숫자형 값으로 변환되어야 함. (LabelEncoder가 선행되어야 함.)
+    - 입력 값으로 2차원의 데이터가 필요함.
+
+```python
+from sklearn.preprocessing import OneHotEncoder
+import numpy as np
+
+items = ['TV', '냉장고', '전자렌지', '컴퓨터', '선풍기', '선풍기', '믹서', '믹서']
+
+#먼저 숫자 값으로 변환하기 위해 LabelEncoder로 변환
+encoder = LabelEncoder()
+encoder.fit(items)
+labels = encoder.transform(items)
+
+# 2차원 데이터로 변환
+# 머신러닝 모델에 데이터를 입력으로 사용할 때, 일반적으로 2차원 형태로 주어짐.
+# 첫 번째 차원은 샘플의 개수를 나타내는 차원이고,
+# 두 번째 차원은 각 샘플의 특성(feature)을 나타내는 차원
+labels = labels.reshape(-1,1)
+# print(labels)
+# -1을 사용하면 해당 차원의 크기를 자동으로 계산
+# 1은 두 번째 차원의 크기를 1로 지정하라는 의미
+
+# 원-핫 인코딩 적용
+oh_encoder = OneHotEncoder()
+oh_encoder.fit(labels)
+oh_labels = oh_encoder.transform(labels)
+print('원-핫 인코딩 데이터')
+print(oh_labels.toarray()) # 일반적인 2차원 배열로 변환하는 메서드-> 2차원 배열로 변환하여 보여줌
+print('원-핫 인코딩 데이터 차원')
+print(oh_labels.shape)
+# items 리스트에서 유일한 값의 개수가 6개이므로, 
+# 원-핫 인코딩은 6개의 이진 자리를 만들어 각 항목에 대해 해당하는 자리를 1로 표시하고 나머지 자리를 0으로 표시
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 원-핫 인코딩 데이터
+[[1. 0. 0. 0. 0. 0.]
+ [0. 1. 0. 0. 0. 0.]
+ [0. 0. 0. 0. 1. 0.]
+ [0. 0. 0. 0. 0. 1.]
+ [0. 0. 0. 1. 0. 0.]
+ [0. 0. 0. 1. 0. 0.]
+ [0. 0. 1. 0. 0. 0.]
+ [0. 0. 1. 0. 0. 0.]]
+
+원-핫 인코딩 데이터 차원
+(8, 6)
+
+</aside>
+
+- 좀 더 쉬운 원-핫 인코딩 방법(get_dummies)
+    
+    Label Encoding 과정(문자열 카테고리 값을 숫자형으로 변환) 거칠 필요 없이 바로 사용 가능
+    
+
+```python
+import pandas as pd
+
+df = pd.DataFrame({'itmes':['TV', '냉장고', '전자렌지', '컴퓨터', '선풍기', '선풍기', '믹서', '믹서']})
+pd.get_dummies(df)
+```
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2017.png)
+
+## 피처 스케일(feature scaling)
+
+### 피처 스케일링이란?
+
+- 서로 다른 변수의 값 범위를 일정한 수준으로 맞추는 작업
+- 대표적인 방법 : 표준화(Standardization), 정규화(Nomalization)
+
+### 표준화(Standardization)
+
+- data의 feature 각각을 평균=0, 분산=1인 가우시안 정규분포를 가진 값으로 변환하는 것
+- 𝑿_𝑺𝒕𝒂𝒏𝒅𝒂𝒓𝒅𝒊𝒛𝒂𝒕𝒊𝒐𝒏 = 𝑿 − 𝒎𝒆𝒂𝒏(𝑿) / 𝒔𝒕𝒅 (𝑿)
+
+### 정규화(Nomalization)
+
+- 서로 다른 feature의 크기를 통일하기 위해 크기를 변환함. 변수를 모두 동일한 크기 단위로 비교하기 위해 값을 모두 최소 0~ 최대 1의 값으로 변환.
+- 즉 개별 데이터의 크기를 모두 똑같은 단위로 변경함.
+- 𝑿_𝑵𝒐𝒓𝒎𝒂𝒍𝒊𝒛𝒂𝒕𝒊𝒐𝒏 = 𝑿 − 𝒎𝒊𝒏(𝑿) / 𝒎𝒂𝒙 𝑿 − 𝒎𝒊𝒏(𝑿)
+
+### StandardScaler(표준화 Class)
+
+- 표준화를 쉽게 지원하기 위한 Class
+- 개별 feature의 평균이 0, 분산이 1인 값으로 변환해줌.
+- data가 가우시안 정규 분포를 가지도록 변환하는 것의 중요성
+    - 선형 회귀
+    - 로지스틱 회귀
+    - 서포트 백터 머신
+    - 위 세개 모델의 경우 데이터가 가우시안 분포를 가진다고 가정하고 구현됐기 때문에 사전에 데이터 변환 작업이 예측 성능 향상에 중요한 요소가 될 수 있음.
+
+```python
+from sklearn.datasets import load_iris
+import pandas as pd
+
+# 붓꽃 데이터셋을 로딩하고 Datarame으로 변환
+iris = load_iris()
+iris_data = iris.data
+iris_df = pd.DataFrame(data=iris_data, columns=iris.feature_names)
+
+print('feature들의 평균 값')
+print(iris_df.mean())
+print('\nfeature들의 분산 값')
+print(iris_df.var())
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> feature들의 평균 값
+sepal length (cm)    5.843333
+sepal width (cm)     3.057333
+petal length (cm)    3.758000
+petal width (cm)     1.199333
+dtype: float64
+
+feature들의 분산 값
+sepal length (cm)    0.685694
+sepal width (cm)     0.189979
+petal length (cm)    3.116278
+petal width (cm)     0.581006
+dtype: float64
+
+</aside>
+
+```python
+from sklearn.preprocessing import StandardScaler
+
+# StandardScaler 객체 생성
+scaler = StandardScaler()
+# StandardScaler로 데이터셋 변환. fit() 과 transform() 호출
+scaler.fit(iris_df)
+iris_scaled = scaler.transform(iris_df)
+
+#transform()시 scale 변환된 데이터셋이 numpy ndarry로 반환되어 이를 DataFrame으로 변환
+iris_df_scaled = pd.DataFrame(data=iris_scaled, columns=iris.feature_names)
+print('feature들의 평균값')
+print(iris_df_scaled.mean())
+print('\nfeature들의 분산값')
+print(iris_df_scaled.var())
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> feature들의 평균값
+sepal length (cm)   -1.690315e-15
+sepal width (cm)    -1.842970e-15
+petal length (cm)   -1.698641e-15
+petal width (cm)    -1.409243e-15
+dtype: float64
+
+feature들의 분산값
+sepal length (cm)    1.006711
+sepal width (cm)     1.006711
+petal length (cm)    1.006711
+petal width (cm)     1.006711
+dtype: float64
+
+</aside>
+
+<aside>
+💡 평균은 0, 분산은 1에 매우 가깝게 맞춰진 것을 확인할 수 있다.
+
+</aside>
+
+### MinMaxScaler(정규화 Class)
+
+- 표준화를 쉽게 지원하기 위한 Class
+- 개별 feature의 평균이 0, 분산이 1인 값으로 변환해줌.
+- data가 가우시안 정규 분포를 가지도록 변환하는 것의 중요성
+    - 서포트 벡터 머신
+    - 선형 회귀
+    - 로지스틱 회귀
+    - 위 3개의 모델의 경우 데이터가 가우시안 분포를 가진다고 가정하고 구현됐기 때문에 사전에 데이터 변환 작업이 예측 성능 향상에 중요한 요소가 될 수 있음.
+
+```python
+from sklearn.preprocessing import MinMaxScaler
+
+# MinMaxScaler 객체 생성
+scaler = MinMaxScaler()
+
+# MinMaxScaler로 데이터셋 변환. fit()과 transform() 호출
+scaler.fit(iris_df)
+iris_scaled = scaler.transform(iris_df)
+
+# transform()시 scale 변환된 데이터셋이 numpy ndarray로 반환되어 이를 DF로 변환
+iris_df_scaled = pd.DataFrame(data=iris_scaled, columns=iris.feature_names)
+print('feature들의 최소값')
+print(iris_df_scaled.min())
+print('\nfeature들의 최대값')
+print(iris_df_scaled.max())
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> feature들의 최소값
+sepal length (cm)    0.0
+sepal width (cm)     0.0
+petal length (cm)    0.0
+petal width (cm)     0.0
+dtype: float64
+
+feature들의 최대값
+sepal length (cm)    1.0
+sepal width (cm)     1.0
+petal length (cm)    1.0
+petal width (cm)     1.0
+dtype: float64feature들의 최소값
+
+</aside>
+
+<aside>
+💡 feature들의 값이 최소 0 ~ 최대 1로 변환되었다.
+
+</aside>
+
+### Scaler를 이용한 fit(), fit_transform 적용 시 유의사항
+
+- fit / transform을 사용하는 목적은?
+    - fit()은 데이터 변환을 위한 기준 정보 설정
+    - transform()은 설정된 정보를 이용해 데이터를 변환
+    - fit_transform()은 fit()+transform()을 한번에 적용하는 기능을 수행
+
+❗training data set, test data set에 fit, transform 적용 시 주의 사항 ❗
+
+- Scaler 객체를 이용해 training data set으로 fit, transform을 적용하면 test data set으로는 다시 fit을 수행하지 않고, 그냥 앞서 trianing data set으로 fit()을 수행한 결과를 이용해 transform() 변환을 적용해야 한다.
+- 즉 training data로 fit() 적용된 스케일링 정보를 test data에 그대로 적용해야 함.
+
+<aside>
+💡 따라서  trainig data와 test data에 각각 fit()을 적용하면 안되고, 
+테스트 데이터에서는 학습 데이터 세트로 `fit()`을 수행한 결과를 이용해 `transform()`을 해야 한다.
+
+`fit_transform()`은 자동으로 `fit()` 과정을 포함시키게 되므로 테스트 데이터에 사용하면 안된다.
+
+</aside>
+
+# 타이타닉 생존자 예측 실습
+
+## 데이터 로드
