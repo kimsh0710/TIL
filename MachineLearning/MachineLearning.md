@@ -1330,3 +1330,1261 @@ dtype: float64feature들의 최소값
 # 타이타닉 생존자 예측 실습
 
 ## 데이터 로드
+
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline
+
+## 데이터 불러오기
+titanic_df = pd.read_csv('./titanic_train.csv')
+titanic_df.info()
+titanic_df.isnull().sum() # NaN값 확인
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> <class 'pandas.core.frame.DataFrame'>
+RangeIndex: 891 entries, 0 to 890
+Data columns (total 12 columns):
+ #   Column       Non-Null Count  Dtype  
+---  ------       --------------  -----  
+ 0   PassengerId  891 non-null    int64  
+ 1   Survived     891 non-null    int64  
+ 2   Pclass       891 non-null    int64  
+ 3   Name         891 non-null    object 
+ 4   Sex          891 non-null    object 
+ 5   Age          714 non-null    float64
+ 6   SibSp        891 non-null    int64  
+ 7   Parch        891 non-null    int64  
+ 8   Ticket       891 non-null    object 
+ 9   Fare         891 non-null    float64
+ 10  Cabin        204 non-null    object 
+ 11  Embarked     889 non-null    object 
+dtypes: float64(2), int64(5), object(5)
+memory usage: 83.7+ KB
+
+PassengerId      0
+Survived         0
+Pclass           0
+Name             0
+Sex              0
+Age            177
+SibSp            0
+Parch            0
+Ticket           0
+Fare             0
+Cabin          687
+Embarked         2
+dtype: int64
+
+</aside>
+
+- Age, Cabin, Embarked에 결측치가 있는 것을 확인할 수 있다.
+
+## ****데이터 확인 & Null 값 처리****
+
+### Null 값 처리
+
+```python
+titanic_df['Age'].fillna(titanic_df['Age'].mean(), inplace=True)
+titanic_df['Cabin'].fillna('N', inplace = True)
+titanic_df['Embarked'].fillna('N', inplace = True)
+print('데이터 세트 Null 값 갯수 ',titanic_df.isnull().sum().sum())
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 데이터 세트 Null 값 갯수  0
+
+</aside>
+
+```python
+print(' Sex 값 분포 :\n',titanic_df['Sex'].value_counts())
+print('\n Cabin 값 분포 :\n',titanic_df['Cabin'].value_counts())
+print('\n Embarked 값 분포 :\n',titanic_df['Embarked'].value_counts())
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />  Sex 값 분포 :
+ male      577
+female    314
+Name: Sex, dtype: int64
+
+ Cabin 값 분포 :
+ N              687
+C23 C25 C27      4
+G6               4
+B96 B98          4
+C22 C26          3
+              ...
+E34              1
+C7               1
+C54              1
+E36              1
+C148             1
+Name: Cabin, Length: 148, dtype: int64
+
+ Embarked 값 분포 :
+ S    644
+C    168
+Q     77
+N      2
+Name: Embarked, dtype: int64
+
+</aside>
+
+### Cabin 컬럼 데이터 제일 앞 등급 표시만 가져오도록
+
+```python
+titanic_df['Cabin'] = titanic_df['Cabin'].str[:1]
+print(titanic_df['Cabin'].head(3))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 0    N
+1    C
+2    N
+Name: Cabin, dtype: object
+
+</aside>
+
+### 데이터 확인
+
+- 생존자의 남녀 성비 구성 확인
+    
+    ```python
+    titanic_df.groupby(['Sex','Survived'])['Survived'].count()
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> Sex     Survived
+    female  0            81
+                 1           233
+    male     0           468
+                 1           109
+    Name: Survived, dtype: int64
+    
+    </aside>
+    
+    - 확인 결과 : 남성보다 여성이 더 생존능력이 뛰어나다 라고 분석을 하는건 너무 성급한 일반화의 오류
+    
+    ```python
+    sns.barplot(x='Sex', y = 'Survived', data=titanic_df)
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2018.png)
+    
+    </aside>
+    
+- 성별과 객실 등급에 따른 생존 여부 비교
+    
+    ```python
+    sns.barplot(x='Pclass', y='Survived', hue='Sex', data=titanic_df)
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2019.png)
+    
+    </aside>
+    
+    <aside>
+    💡 생존자수가 1이 넘지 않는 이유 'sns.barplot()' 함수는 기본적으로 막대 그래프를 그릴 때 각 범주의 평균 값을 계산하여 표시. 
+    
+    생존 여부(Survived) 열은 0과 1의 두 가지 값으로 구성되어 있으며, 이 값들은 사망(0)과 생존(1)을 나타냄.
+    
+    따라서 평균 생존율은 0과 1 사이의 값으로 표현됨.
+    
+    </aside>
+    
+    ```python
+    sns.barplot(x="Sex", y="Survived", hue="Pclass", data=titanic_df)
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2020.png)
+    
+    </aside>
+    
+- 나이별 생존 여부 비교
+    
+    ```python
+    def get_categroy(age):
+        cat = ""
+        if age <= -1: cat = "Unknown"
+        elif age <= 5: cat = "Baby"
+        elif age <= 12: cat = "Child"
+        elif age <= 18: cat = "Teenager"
+        elif age <= 25: cat = "Student"
+        elif age <= 35: cat = "Young Adult"
+        elif age <= 60: cat = "Adult"
+        else : cat = "Elderly"
+        return cat
+    
+    #X축의 값을 순차적으로 표시하기 위한 설정
+    group_names = ['Unknown', 'Baby', 'Child', 'Teenager', 'Student', 'Young Adult', 'Adult', 'Elderly']
+    
+    # lambda 식에 위에서 생성한 get_category( ) 함수를 반환값으로 지정. 
+    # get_category(X)는 입력값으로 'Age' 컬럼값을 받아서 해당하는 cat 반환
+    titanic_df["AgeGroup"] = titanic_df["Age"].apply(lambda x : get_categroy(x))
+    titanic_df["AgeGroup"].value_counts()
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> Young Adult    373
+    Adult          195
+    Student        162
+    Teenager        70
+    Baby            44
+    Child           25
+    Elderly         22
+    Name: AgeGroup, dtype: int64
+    
+    </aside>
+    
+    ```python
+    # 나이대 그룹과 성별에 따른 생존 여부
+    sns.barplot(x="AgeGroup", y="Survived", hue="Sex", data=titanic_df,  order=group_names)
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2021.png)
+    
+    </aside>
+    
+- Parch(같이 탑승한 부모님 또는 어린이 인원수)와 SibSp(같이 탑승한 형제 또는 배우자 인원수)에 따른 생존 여부 비교
+    
+    ```python
+    sns.barplot(x="Parch", y="Survived", data=titanic_df)
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2022.png)
+    
+    </aside>
+    
+    <aside>
+    💡 결과 : 다른 비교 그래프들에 비해 균등하므로 좋은 변수는 아님
+    
+    </aside>
+    
+    ```python
+    sns.barplot(x="SibSp", y="Survived", data=titanic_df)
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2023.png)
+    
+    </aside>
+    
+- 머신러닝 알고리즘에 불필요한 속성 제거
+    
+    ```python
+    def drop_features(df):
+        df.drop(['PassengerId','Name','Ticket'],axis=1,inplace=True)
+        return df
+    ```
+    
+
+## 인코딩
+
+```python
+# 레이블 인코딩 수행.
+# 'Cabin','Sex','Embarked'의 데이터 값을 숫자로 변환
+
+from sklearn import preprocessing
+
+def format_features(df):
+    features = ['Cabin','Sex','Embarked']
+    for feature in features:
+        le = preprocessing.LabelEncoder()
+        le = le.fit(df[feature])
+        df[feature] = le.transform(df[feature])
+    return df
+
+titanic_df = format_features(titanic_df)
+titanic_df.head()
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2024.png)
+
+</aside>
+
+- 위에서 실행한 Null값 처리, 불필요한 속성 제거, 인코딩을 하나의 def로 생성
+    
+    ```python
+    from sklearn.preprocessing import LabelEncoder
+    
+    # Null 처리 함수
+    def fillna(df):
+        df['Age'].fillna(df['Age'].mean(),inplace=True)
+        df['Cabin'].fillna('N',inplace=True)
+        df['Embarked'].fillna('N',inplace=True)
+        df['Fare'].fillna(0,inplace=True)
+        return df
+    
+    # 머신러닝 알고리즘에 불필요한 속성 제거
+    def drop_features(df):
+        df.drop(['PassengerId','Name','Ticket'],axis=1,inplace=True)
+        return df
+    
+    # 앞에서 설정한 Data Preprocessing 함수 모두 호출
+    def transform_features(df):
+        df = fillna(df)
+        df = drop_features(df)
+        df = format_features(df)
+        return df
+    ```
+    
+
+## 원본 데이터를 재로딩 & feature 데이터셋과 Label 데이터셋 분리
+
+- 원본 데이터 재로딩
+    
+    ```python
+    import pandas as pd
+    
+    titanic_df = pd.read_csv('./titanic_train.csv')
+    
+    y_titanic_df = titanic_df['Survived']
+    X_titanic_df= titanic_df.drop('Survived',axis=1)
+    
+    X_titanic_df = transform_features(X_titanic_df) # 데이터 전처리 & 인코딩
+    
+    X_titanic_df
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2025.png)
+    
+    </aside>
+    
+- feature 데이터셋과 Label 데이터셋 분리
+    
+    ```python
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test=train_test_split(X_titanic_df, y_titanic_df, \
+                                                      test_size=0.2, random_state=11)
+    ```
+    
+
+## 생존자 예측 수행
+
+- 결정트리, 랜덤 포레스트, 로지스틱 회귀를 이용
+- 사이킷런 Classifier 객체 생성
+
+```python
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+# 결정트리, Random Forest, 로지스틱 회귀를 위한 사이킷런 Classifier 클래스 생성
+dt_clf = DecisionTreeClassifier(random_state=11)
+rf_clf = RandomForestClassifier(random_state=11)
+lr_clf = LogisticRegression()
+```
+
+- 학습/예측평가
+
+```python
+# DecisionTreeClassfier 학습/예측평가
+dt_clf.fit(X_train, y_train)
+dt_pred = dt_clf.predict(X_test)
+print('DecisionTreeClassifier 정확도 : {0:.4f}'.format(accuracy_score(y_test, dt_pred)))
+
+# RandomForestClassifier 학습/예측/평가
+rf_clf.fit(X_train, y_train)
+rf_pred = rf_clf.predict(X_test)
+print('RandomForestClassifier 정확도 : {0:.4f}'.format(accuracy_score(y_test, rf_pred)))
+
+# LogisticRegression 학습/예측/평가
+lr_clf.fit(X_train, y_train)
+lr_pred = lr_clf.predict(X_test)
+print('LogisticRegression 정확도 : {0:.4f}'.format(accuracy_score(y_test, lr_pred)))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> DecisionTreeClassifier 정확도 : 0.7989
+RandomForestClassifier 정확도 : 0.8436
+LogisticRegression 정확도 : 0.8603
+
+</aside>
+
+- 결과 : 3개의 알고리즘 중 LogisticRegression이 타 알고리즘에 비해 높은 정확도를 나타내고 있음.
+- 그러나 아직 최적화 작업을 수행하지 않았고, 데이터 양도 충분하지 않기에 LogistiocRegression이 가장 좋은 모델이라고 할 수는 없음.
+
+## 교차 검증
+
+- KFold
+
+```python
+from sklearn.model_selection import KFold
+
+def exec_kfold(clf, folds = 5) :
+    # 폴드 세트가 5개인 KFold 객체 생성. 폴드 수만큼 예측결과 저장 위한 리스트 생성
+    kfold = KFold(n_splits = folds)
+    scores = []
+    
+    # KFold 교차 검증 수행
+    for iter_count, (train_index, test_index) in enumerate(kfold.split(X_titanic_df)) :
+        # X_titanic_df 데이터에서 교차 검증별로 학습과 검증 데이터를 가리키는 index 생성
+        X_train, X_test = X_titanic_df.values[train_index], X_titanic_df.values[test_index] # values를 통해 df를 ndarray로 변환
+        y_train, y_test = y_titanic_df.values[train_index], y_titanic_df.values[test_index]
+        
+        # Classifier 학습/예측/평가
+        clf.fit(X_train, y_train)
+        clf_pred = clf.predict(X_test)
+        accuracy = accuracy_score(y_test, clf_pred)
+        scores.append(accuracy)
+        print("교차 검증 {0} 정확도 : {1:.4f}".format(iter_count, accuracy))
+        
+    # 5개의 fold에서 평균 정확도 계산
+    mean_score = np.mean(scores)
+    print("평균 정확도: {0:.4f}".format(mean_score))
+
+#exec_fold 호출
+exec_kfold(dt_clf, folds = 5)
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 교차 검증 0 정확도 : 0.7486
+교차 검증 1 정확도 : 0.7640
+교차 검증 2 정확도 : 0.8202
+교차 검증 3 정확도 : 0.7809
+교차 검증 4 정확도 : 0.7921
+평균 정확도: 0.7812
+
+</aside>
+
+- cross_val_score()
+
+```python
+from sklearn.model_selection import cross_val_score
+
+scores = cross_val_score(dt_clf, X_titanic_df, y_titanic_df, cv = 5)
+print("scores : ", scores)
+for iter_count, accuracy in enumerate(scores) :
+    print("교차 검증 {0} 정확도: {1:.4f}".format(iter_count, accuracy))
+    
+print("평균 정확도: {0:.4f}".format(np.mean(scores)))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> scores :  [0.74860335 0.7752809  0.80898876 0.75842697 0.80337079]
+교차 검증 0 정확도: 0.7486
+교차 검증 1 정확도: 0.7753
+교차 검증 2 정확도: 0.8090
+교차 검증 3 정확도: 0.7584
+교차 검증 4 정확도: 0.8034
+평균 정확도: 0.7789
+
+</aside>
+
+- GridSearchCV
+
+```python
+from sklearn.model_selection import GridSearchCV
+
+parameters = {'max_depth':[2, 3, 5, 10],
+             'min_samples_split':[2, 3, 5],
+             'min_samples_leaf':[1, 5, 8]}
+grid_dclf = GridSearchCV(dt_clf, param_grid = parameters, scoring = 'accuracy', cv = 5)
+grid_dclf.fit(X_train, y_train)
+
+print('GridSearchCV 최적 하이퍼 파라미터 : ', grid_dclf.best_params_)
+print('GridSearchCV 최고 정확도: {0:.4f}'.format(grid_dclf.best_score_))
+best_dclf = grid_dclf.best_estimator_
+
+#GridSearchCV의 최적 하이퍼 파라미터로 학습된 Estimator로 예측 및 평가 수행
+dpredictions = best_dclf.predict(X_test)
+accuracy = accuracy_score(y_test, dpredictions)
+print('테스트 세트에서의 DecisionTreeClassifier 정확도 : {0:.4f}'.format(accuracy))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> GridSearchCV 최적 하이퍼 파라미터 :  {'max_depth': 5, 'min_samples_leaf': 1, 'min_samples_split': 5}
+GridSearchCV 최고 정확도: 0.7993
+테스트 세트에서의 DecisionTreeClassifier 정확도 : 0.8659
+
+</aside>
+
+# 분류(Classification) 성능 평가 지표
+
+## 정확도(Accuracy)
+
+### 정확도란?
+
+- 정확도는 직관적으로 모델 예측 성능을 나타내는 평가 지표
+- 이진 분류의 경우 데이터의 구성에 따라 ML 모델의 성능을 왜곡할 수 있
+기 때문에 정확도 수치 하나만 가지고 성능을 평가하지 않음.
+- 특히 정확도는 불균형한(imbalanced) 레이블 값 분포에서 ML 모델의
+선능을 판단할 경우, 적합한 평가 지표가 아님
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2026.png)
+
+### 적용
+
+```python
+import numpy as np
+from sklearn.base import BaseEstimator
+
+class MyDummyClassfier(BaseEstimator):
+    # fit() 메소드는 아무것도 학습하지 않음.
+    def fit(self, X, y=None):
+        pass
+    
+    #predict() 메소드는 단순히 sex feature가 1이면 0, 그렇지 않으면 1로 예측함.
+    def predict(self, X):
+        pred = np.zeros((X.shape[0],1))
+        for i in range(X.shape[0]):
+            if X['Sex'].iloc[i] == 1:
+                pred[i] = 0
+            else :
+                pred[i] = 1
+                
+        return pred
+```
+
+```python
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+
+# Null 처리 함수
+def fillna(df):
+    df['Age'].fillna(df['Age'].mean(),inplace=True)
+    df['Cabin'].fillna('N', inplace = True)
+    df['Embarked'].fillna('N', inplace = True)
+    df['Fare'].fillna(0, inplace = True)
+    return df
+
+# 머신러닝 알고리즘에 불필요한 속성 제거
+
+def drop_features(df):
+    df.drop(['PassengerId','Name','Ticket'],axis=1, inplace=True)
+    return df
+
+# 레이블 인코딩 수행
+def format_features(df):
+    df['Cabin'] = df['Cabin'].str[:1]
+    features = ['Cabin','Sex','Embarked']
+    for feature in features:
+        le = LabelEncoder()
+        le = le.fit(df[feature])
+        df[feature] = le.transform(df[feature])
+    return df
+
+# 앞에서 설정한 Data Preprocessing 함수 호출
+def transform_features(df):
+    df = fillna(df)
+    df = drop_features(df)
+    df = format_features(df)
+    return df
+```
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# 원본 데이터를 재로딩, 데이터 가공, 학습데이터/테스트데이터 분할
+titanic_df = pd.read_csv('C:/JupyterTest/머신러닝/titanic_train.csv')
+y_titanic_df = titanic_df['Survived']
+X_titanic_df = titanic_df.drop('Survived',axis=1)
+X_titanic_df = transform_features(X_titanic_df)
+X_train, X_test, y_train, y_test = train_test_split(X_titanic_df, y_titanic_df,test_size=0.2, random_state=0)
+
+# 위에서 생성한 Dummy Classfier를 이용하여 학습/예측/평가 수행
+myclf = MyDummyClassfier()
+myclf.fit(X_train, y_train)
+
+mypredictions = myclf.predict(X_test)
+print('Dummy Classfier의 정확도는: {0: .4f}'.format(accuracy_score(y_test, mypredictions)))
+
+# 아무 알고리즘을 적용하지 않아도 정확도가 0.7877이 나옴.
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> Dummy Classfier의 정확도는:  0.7877
+
+</aside>
+
+```python
+from sklearn.datasets import load_digits
+from sklearn.model_selection import train_test_split
+from sklearn.base import BaseEstimator
+from sklearn.metrics import accuracy_score
+import numpy as np
+import pandas as pd
+
+class MyFakeClassfier(BaseEstimator):
+    def fit(self,X,y):
+        pass
+    
+    #입력값으로 들어오는 X 데이터셋의 크기만큼 모두 0값으로 만들어서 반환
+    def predict(self,X):
+        return np.zeros((len(X),1), dtype=bool)
+    
+# 사이킷런의 내장 데이터 셋인 load_digits()를 이용하여 MNIST 데이터 로딩
+digits = load_digits()
+
+print(digits.data)
+print('### digits.data.shape:', digits.data.shape)
+print(digits.target)
+print('### digits.target.shape:', digits.target.shape)
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> [[ 0.  0.  5. ...  0.  0.  0.]
+ [ 0.  0.  0. ... 10.  0.  0.]
+ [ 0.  0.  0. ... 16.  9.  0.]
+ ...
+ [ 0.  0.  1. ...  6.  0.  0.]
+ [ 0.  0.  2. ... 12.  0.  0.]
+ [ 0.  0. 10. ... 12.  1.  0.]]
+### digits.data.shape: (1797, 64)
+[0 1 2 ... 8 9 8]
+### digits.target.shape: (1797,)
+
+</aside>
+
+```python
+digits.target == 7
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> array([False, False, False, ..., False, False, False])
+
+</aside>
+
+```python
+# digits 번호가 7이면 Ture이고 이를 astype(int)로 1로 변환
+# 7 아니면 False이고 0으로 변환
+
+y = (digits.target ==7).astype(int)
+X_train, X_test, y_train, y_test = train_test_split(digits.data, y, random_state=11)
+```
+
+```python
+# 불균형한 레이블 데이터 분포도 확인
+print('레이블 테스트 세트 크기:', y_test.shape)
+print('테스트 세트 레이블 0과 1의 분포도')
+print(pd.Series(y_test).value_counts())
+
+# Dummy Classfier로 학습/예측/정확도 평가
+# 들어오는 값들을 모두 0으로 예측하는 MyFakeClassfier()을 이용
+# 7을 제외한 모든 숫자는 0으로 인식하기 때문에 0으로 예측할 확률이 높다. 이러한 예측을 가상으로 만든 것이 MyFakeClassfier
+fakeclf = MyFakeClassfier()
+fakeclf.fit(X_train, y_train)
+fakepred = fakeclf.predict(X_test)
+print('모든 예측을 0으로 하여도 정확도는:{:3f}'.format(accuracy_score(y_test, fakepred)))
+
+# 모든 예측이 0임에도 불구하고 정확도가 0.9가 나왔다 => 문제 있음.
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 레이블 테스트 세트 크기: (450,)
+
+테스트 세트 레이블 0과 1의 분포도
+0    405
+1     45
+dtype: int64
+
+모든 예측을 0으로 하여도 정확도는:0.900000
+
+</aside>
+
+## 오차행렬(Confusion Matrix)
+
+### 오차행렬이란?
+
+- 오차 행렬은 이진 분류의 예측 오류가 얼마인지가 더불어 어떠한 유형의
+예측 오류가 발생하고 있는지를 함께 나타내는 지표
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2027.png)
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2028.png)
+
+- 예시)
+- 의사가 암환자를 정상 환자로 잘못 진단한 것은 FN(False Negative)에 해당
+- 의사가 정상 환자를 암환자로 잘못 진단한 것은 FP(False Positive)에 해당
+- **정확도**는 방금 말했다시피 전체 중 맞게 예측할 확률을 의미한다.
+**정밀도**는 맞다고 예측했는데 실제 맞을 확률을 의미한다.
+**민감도**는 실제 맞았는데 맞다고 예측했을 확률을 의미한다.
+**특이도**는 실제 틀렸는데 틀렸다고 예측했을 확률을 의미한다.
+
+### 적용
+
+```python
+from sklearn.metrics import confusion_matrix
+
+# 앞절의 예측 결과인 fakepred와 실제 결과인 y_test의 Confusion Matrix 출력
+confusion_matrix(y_test, fakepred)
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> array([[405,   0],
+           [ 45,   0]], dtype=int64)
+
+</aside>
+
+- 정확도는 높게 나오지만 계산에서 0인 것들이 제대로 고려되지 않았음
+- 그걸 고려해주는 정밀도와 재현율을 알아보자
+
+## 정밀도(Precision)와 재현율(Recall)
+
+### 정밀도와 재현율이란?
+
+- **정밀도**
+    - 예측을 Positive로 한 대상 중에 예측을 실제 값이 Posotove로 일치한 데이터의 비율
+    - 정밀도 = TP / (FP + TP)
+- **재현율**
+    - 실제값이 Positive인 대상 중에 예측과 실제 값이 Positive로 일치한 데이터의 비율
+    - 재현율 = TP / (FN + TP)
+
+### 업무에 따른 재현율과 정밀도의 상대적 중요도
+
+- 재현율이 상대적으로 더 중요한 지표인 경우는 실제 Positive 양성의 데이터 예측을 Negative로 잘못 판단하게 되면 큰 영향이 발생하는 경우
+⇒ 암 진단, 금융 사기 판별
+- 정밀도가 상대적으로 더 중요한 지표는 실제 Negative 음성인 데이터 예측을 Positive 양성으로 잘못 판단하게 되면 큰 영향이 발생하는 경우
+⇒ 스팸 메일
+- 불균형한 레이블 클래스를 가지는 이진 분류 모델에서는 많은 데이터 중에서 중점적으로 찾아야 하는 매우 적은 수의 결과값에 Positive를 설정해 1값을 부여하고, 그렇지 않은 경우는 Negative로 0 값을 일반적으로 부여
+
+### 정밀도/재현율 트레이드오프(Trade off)
+
+- 정밀도 또는 재현율이 특별히 강조되어야 할 경우 분류의 결정 임계값(Threshold)을 조정해 정밀도 또는 재현율의 수치를 높일 수 있음
+- 정밀도와 재현율은 상호 보완적인 평가 지표이기 때문에 어느 한쪽을 강
+제로 높이면 다른 하나의 수치는 떨어지기 쉬움
+- 정밀도/재현율의 트레이드오프(Trade-off)
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2029.png)
+    
+
+### 적용
+
+- **정확도와 정밀도**
+    
+    ```python
+    from sklearn.metrics import accuracy_score, precision_score, recall_score
+    
+    print("정밀도:", precision_score(y_test, fakepred))
+    print("재현율:", recall_score(y_test, fakepred))
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 정밀도: 0.0
+    재현율: 0.0
+    
+    </aside>
+    
+    - 둘다 0이 나왔음, 정확도랑은 매우 큰 차이가 나는 것을 볼 수 있다.
+    
+    ```python
+    from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
+    
+    # 오차행렬, 정확도, 정밀도, 재현율을 한꺼번에 계산하는 함수 생성
+    
+    def get_clf_eval(y_test, pred):
+        confusion = confusion_matrix(y_test, pred)
+        accuracy = accuracy_score(y_test, pred)
+        precision = precision_score(y_test, pred)
+        recall = recall_score(y_test, pred)
+        print('오차행렬')
+        print(confusion)
+        print('정확도: {0: .4f}, 정밀도: {1:.4f}, 재현율: {2:.4f}'.format(accuracy, precision, recall))
+    ```
+    
+    ```python
+    import numpy as np
+    import pandas as pd
+    
+    from sklearn.model_selection import train_test_split
+    from sklearn.linear_model import LogisticRegression
+    
+    # 원본 데이터를 재로딩, 데이터 가공, 학습데이터/테스트데이터 분할
+    
+    titanic_df = pd.read_csv('C:/JupyterTest/머신러닝/titanic_train.csv')
+    y_titanic_df = titanic_df['Survived']
+    X_titanic_df = titanic_df.drop('Survived',axis=1)
+    X_titanic_df = transform_features(X_titanic_df)
+    
+    X_train, X_test, y_train, y_test = train_test_split(X_titanic_df,y_titanic_df, \
+                                                       test_size=0.20, random_state=11)
+    
+    lr_clf = LogisticRegression()
+    
+    lr_clf.fit(X_train, y_train)
+    pred = lr_clf.predict(X_test)
+    get_clf_eval(y_test, pred)
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 오차행렬
+    [[104  14]
+     [ 13  48]]
+    정확도:  0.8492, 정밀도: 0.7742, 재현율: 0.7869
+    
+    </aside>
+    
+    - 일반적인 Estimator를 사용하니까 정밀도와 재현율이 적당히 나오는 것을 볼 수 있다.
+    
+    - 평가지표들을 한번에 출력해주는 `classification_report`라는 scikit-learn 함수가 있음
+    
+    ```python
+    from sklearn.metrics import classification_report
+    print(classification_report(y_test, pred))
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2030.png)
+    
+    </aside>
+    
+- ****Precision/Recall Trade-off****
+    1. **predict_proba()**
+    
+    ```python
+    pred_proba =lr_clf.predict_proba(X_test)
+    pred = lr_clf.predict(X_test)
+    print('pred_proba()결과 Shape: {0}'.format(pred_proba.shape))
+    print('pred_proba array에서 앞 3개만 샘플로 추출 \n:', pred_proba[:3])
+    
+    # 에측 확율 array와 예측 결과값 array를 concatenate하여 예측 확률과 결과값을 한눈에 확인
+    pred_proba_result = np.concatenate([pred_proba, pred.reshape(-1,1)],axis =1)
+    print('두개의 class 중에서 더 큰 확률을 클래스 값으로 예측 \n', pred_proba_result[:3])
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> pred_proba()결과 Shape: (179, 2)
+    
+    pred_proba array에서 앞 3개만 샘플로 추출
+    : [[0.46208787 0.53791213]
+     [0.87861827 0.12138173]
+     [0.87710724 0.12289276]]
+    
+    두개 class 중에서 더 큰 확률을 클래스 값으로 예측
+     [[0.46208787 0.53791213 1.        ]
+     [0.87861827 0.12138173 0.        ]
+     [0.87710724 0.12289276 0.        ]]
+    
+    </aside>
+    
+    - 이진 분류라서 열이 2개인 것을 볼 수 있다.
+        - 첫 번째 열: 0 (Negative)으로 예측할 확률
+        - 두 번째 열: 1 (Positive)로 예측할 확률
+    - 두 열을 합치면 1
+    - 0.5를 기준으로 하여 pred 값 확인
+    
+    1. **Binarizer**
+    - scikit-learn의 Binarizer에서 `threshold`로 불리는 임곗값을 조정해서 분류를 진행할 수 있다.
+    
+    ```python
+    from sklearn.preprocessing import Binarizer
+    
+    X = [[ 1, -1,  2],
+        [ 2,  0,  0],
+        [ 0,  1.1, 1.2]]
+    
+    # threshold 기준값보다 같거나 작으면 0을, 크면 1을 반환
+    binarizer = Binarizer(threshold=1.1)                     
+    print(binarizer.fit_transform(X))
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> [[0. 0. 1.]
+     [1. 0. 0.]
+     [0. 0. 1.]]
+    
+    </aside>
+    
+    - 1.1보다 큰 값은 1로, 1.1보다 작거나 같은 값은 0으로 분류된 것을 확인
+    - 분류 결정 임계값 0.5 기반에서 Binarizer를 이용하여 예측값 변환해보자
+    - predict_proba()의 두 번째 열인 1을 예측하는 확률을 뽑아서,
+    그것이 0.5보다 큰지 작은지를 Binarizer로 판단하고, 평가하는 것이다.
+    
+    ```python
+    from sklearn.preprocessing import Binarizer
+    
+    #Binarizer의 threshold 설정값. 분류 결정 임곗값임.  
+    custom_threshold = 0.5
+    
+    # predict_proba( ) 반환값의 두번째 컬럼 , 즉 Positive 클래스 컬럼 하나만 추출하여 Binarizer를 적용
+    pred_proba_1 = pred_proba[:,1].reshape(-1,1)
+    
+    binarizer = Binarizer(threshold=custom_threshold).fit(pred_proba_1) 
+    custom_predict = binarizer.transform(pred_proba_1)
+    
+    get_clf_eval(y_test, custom_predict)
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 오차 행렬
+    [[104  14]
+     [ 13  48]]
+    정확도: 0.8492, 정밀도: 0.7742, 재현율: 0.7869
+    
+    </aside>
+    
+    - 기본값인 `0.5`로 지정하니까 앞에서 한 것과 완전히 동일하게 나왔다.
+    
+    <aside>
+    💡 predict_proba( ) 반환값에서 첫번째 열은 Negative 클래스에 대한 예측 확률, 두번째 열은 Positive 클래스에 대한 예측 확률이다.
+    
+    </aside>
+    
+    - 임계치를 0.4로 변경
+    
+    ```python
+    custom_threshold = 0.4
+    pred_proba_1 = pred_proba[:,1].reshape(-1,1)
+    binarizer = Binarizer(threshold=custom_threshold).fit(pred_proba_1)
+    custom_predict = binarizer.transform(pred_proba_1)
+    
+    get_clf_eval(y_test, custom_predict)
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 오차행렬
+    [[98 20]
+     [10 51]]
+    정확도:  0.8324, 정밀도: 0.7183, 재현율: 0.8361
+    
+    </aside>
+    
+    - 임곗값을 낮추니까 정밀도는 낮아지고, 재현율은 높아졌다.
+    
+    - 반복문을 이용해서 임곗값 상승에 따른 정밀도와 재현율의 Trade-off를 확인
+    
+    ```python
+    # 테스트를 수행할 모든 임곗값을 리스트 객체로 저장. 
+    thresholds = [0.4, 0.45, 0.50, 0.55, 0.60]
+    
+    def get_eval_by_threshold(y_test , pred_proba_c1, thresholds):
+        # thresholds list객체내의 값을 차례로 iteration하면서 Evaluation 수행.
+        for custom_threshold in thresholds:
+            binarizer = Binarizer(threshold=custom_threshold).fit(pred_proba_c1) 
+            custom_predict = binarizer.transform(pred_proba_c1)
+            print('임곗값:',custom_threshold)
+            get_clf_eval(y_test , custom_predict)
+    
+    get_eval_by_threshold(y_test ,pred_proba[:,1].reshape(-1,1), thresholds )
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 임곗값: 0.4
+    오차 행렬
+    [[99 19]
+     [10 51]]
+    정확도: 0.8380, 정밀도: 0.7286, 재현율: 0.8361
+    
+    임곗값: 0.45
+    오차 행렬
+    [[103  15]
+     [ 12  49]]
+    정확도: 0.8492, 정밀도: 0.7656, 재현율: 0.8033
+    
+    임곗값: 0.5
+    오차 행렬
+    [[104  14]
+     [ 13  48]]
+    정확도: 0.8492, 정밀도: 0.7742, 재현율: 0.7869
+    
+    임곗값: 0.55
+    오차 행렬
+    [[109   9]
+     [ 15  46]]
+    정확도: 0.8659, 정밀도: 0.8364, 재현율: 0.7541
+    
+    임곗값: 0.6
+    오차 행렬
+    [[112   6]
+     [ 16  45]]
+    정확도: 0.8771, 정밀도: 0.8824, 재현율: 0.7377
+    
+    </aside>
+    
+    1. **precision_recall_curve()**
+    - scikit-learn에서 임곗값별 정밀도와 재현율을 구하는 함수
+    - 일반적으로 0.11 ~ 0.95 정도의 임곗값을 담은 ndarray와 이 임곗값에 해당하는 정밀도 및 재현율 값을 담은 ndarray를 반환
+    
+    ```python
+    from sklearn.metrics import precision_recall_curve
+    
+    # 레이블 값이 1일때의 예측 확률을 추출 
+    pred_proba_class1 = lr_clf.predict_proba(X_test)[:, 1] 
+    
+    # 실제값 데이터 셋과 레이블 값이 1일 때의 예측 확률을 precision_recall_curve 인자로 입력 
+    precisions, recalls, thresholds = precision_recall_curve(y_test, pred_proba_class1 )
+    print('반환된 분류 결정 임곗값 배열의 Shape:', thresholds.shape)
+    print('반환된 precisions 배열의 Shape:', precisions.shape)
+    print('반환된 recalls 배열의 Shape:', recalls.shape)
+    
+    print("thresholds 5 sample:", thresholds[:5])
+    print("precisions 5 sample:", precisions[:5])
+    print("recalls 5 sample:", recalls[:5])
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 반환된 분류 결정 임곗값 배열의 Shape: (143,)
+    
+    반환된 precisions 배열의 Shape: (144,)
+    
+    반환된 recalls 배열의 Shape: (144,)
+    
+    thresholds 5 sample: [0.10393302 0.10393523 0.10395998 0.10735757 0.10891579]
+    
+    precisions 5 sample: [0.38853503 0.38461538 0.38709677 0.38961039 0.38562092]
+    
+    recalls 5 sample: [1.         0.98360656 0.98360656 0.98360656 0.96721311]
+    
+    </aside>
+    
+    - 임계값의 변경에 따른 정밀도-재현율 변화 곡선을 그림
+    
+    ```python
+    import matplotlib.pyplot as plt
+    import matplotlib.ticker as ticker
+    %matplotlib inline
+    
+    def precision_recall_curve_plot(y_test, pred_proba_c1):
+        #threshold ndarray와 이 threshold에 따른 정밀도, 재현율, ndarray 출출
+        precicsons, recalls, thresholds = precision_recall_curve(y_test, pred_proba_c1)
+        
+        # x 축을 threshold값으로, y축은 정밀도, 재현율 값으로 각각 plot 수행.
+        # 정밀도는 점섬으로 표시
+        plt.figure(figsize=(8,6))
+        treshold_boindary = thresholds.shape[0]
+        plt.plot(thresholds, precisions[0:treshold_boindary],linestyle='--',
+                 label='precision')
+        plt.plot(thresholds, recalls[0:treshold_boindary], label='recall')
+        
+        # threshold 값 X 축의 Scalse을 0,1 단위로 변경
+        start, end = plt.xlim()
+        plt.xticks(np.round(np.arange(start, end, 0.1),2))
+        
+        # x축, y축 label과 legend 그리고 grid 설정
+        plt.xlabel('Treshold value'); plt.ylabel('Precision and Recall value')
+        plt.legend(); plt.grid()
+        plt.show()
+        
+    precision_recall_curve_plot(y_test, lr_clf.predict_proba(X_test)[:,1])
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2031.png)
+    
+    </aside>
+    
+
+## F1 Score
+
+### F1 Score란?
+
+- F1 스코어(Score)는 정밀도와 재현율을 결합한 지표
+- 정밀도와 재현율이 어느 한쪽으로 치우치지 않는 수치를 나
+타낼 때 상대적으로 높은 값을 가짐
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2032.png)
+
+### 적용
+
+```python
+# pred : 타이타닉 데이터 LogisitcRegression으로 fit() 후 predict() 한 것
+
+from sklearn.metrics import f1_score
+f1 = f1_score(y_test, pred)
+print('F1 스코어: {0: .4f}'.format(f1))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> `F1 스코어: 0.7805`
+
+</aside>
+
+- `get_clf_eval()` 에 F1 Score를 추가
+
+```python
+def get_clf_eval(y_test , pred):
+    confusion = confusion_matrix( y_test, pred)
+    accuracy = accuracy_score(y_test , pred)
+    precision = precision_score(y_test , pred)
+    recall = recall_score(y_test , pred)
+    # F1 스코어 추가
+    f1 = f1_score(y_test,pred)
+    print('오차 행렬')
+    print(confusion)
+    # f1 score print 추가
+    print('정확도: {0:.4f}, 정밀도: {1:.4f}, 재현율: {2:.4f}, F1:{3:.4f}'.format(accuracy, precision, recall, f1))
+
+thresholds = [0.4 , 0.45 , 0.50 , 0.55 , 0.60]
+pred_proba = lr_clf.predict_proba(X_test)
+get_eval_by_threshold(y_test, pred_proba[:,1].reshape(-1,1), thresholds)
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 임곗값: 0.4
+오차 행렬
+[[99 19]
+ [10 51]]
+정확도: 0.8380, 정밀도: 0.7286, 재현율: 0.8361, F1:0.7786
+
+임곗값: 0.45
+오차 행렬
+[[103  15]
+ [ 12  49]]
+정확도: 0.8492, 정밀도: 0.7656, 재현율: 0.8033, F1:0.7840
+
+임곗값: 0.5
+오차 행렬
+[[104  14]
+ [ 13  48]]
+정확도: 0.8492, 정밀도: 0.7742, 재현율: 0.7869, F1:0.7805
+
+임곗값: 0.55
+오차 행렬
+[[109   9]
+ [ 15  46]]
+정확도: 0.8659, 정밀도: 0.8364, 재현율: 0.7541, F1:0.7931
+
+임곗값: 0.6
+오차 행렬
+[[112   6]
+ [ 16  45]]
+정확도: 0.8771, 정밀도: 0.8824, 재현율: 0.7377, F1:0.8036
+
+</aside>
+
+- 임곗값이 0.6일 때 F1 Score가 가장 큰 것을 확인
+
+## ****ROC Curve와 AUC****
+
+### ****ROC Curve와 AUC란?****
+
+- ROC 곡선(Receiver Operation Characteristic Curve)과 이에 기반한
+AUC 스코어는 이진 분류의 예측 성능 측정에서 중요하게 사용되는 지표
+- 일반적으로 의학 분야에서 많이 사용되지만, 머신러닝의 이진 분류 모델
+의 예측 성능을 판단하는 중요한 평가 지표
+- ROC 곡선은 FPR(False Positive Rate)이 변할 때 TPR(True Positive Rate)이 어떻게 변하는지를 나타내는 곡선
+- FPR을 X축으로, TPR을 Y축으로 잡으면 FPR이 변화에 따른 TPR의 변
+화가 곡선 형태로 나타냄
+- 분류의 성능 지표로 사용되는 것은 ROC 곡선 면접에 기반한 AUC값
+으로 결정
+- AUC(Area Under Curve) 값이 ROC 곡선 밑의 면적을 구한 것으로써
+일반적으로 1에 가까울수록 좋은 수치
+
+### FPR의 변화에 따른 TPR의 변화 곡선
+
+- TPR은 Ture Positive Rate의 약자이며, 이는 재현율을 나타냄 ⇒ 민감도
+- FPR은 실제 Negative(음성)을 잘못 예측한 비율을 나타냄
+(실제는 Negative인데 Positive로 또는 Negative로 예측한 것 중 Positive로 잘못 예측한 비율)
+- FPR은 FP / (FP + TN)
+
+### 적용
+
+- `predict_proba()[:,1]`로 1 (Positive)로 예측할 확률을 뽑음
+- `roc_curve()`로 FPR, TPR, 그에 해당하는 임곗값(Threshold)를 뽑음 (ndarray)
+- 임곗값을 5 Step으로 추출해서 `thr_index`에 저장
+
+```python
+from sklearn.metrics import roc_curve
+
+# 레이블 값이 1일 때의 예측 확률을 추출
+pred_proba_class1 = lr_clf.predict_proba(X_test)[:,1]
+
+fprs, tprs, thresholds = roc_curve(y_test, pred_proba_class1)
+# 반환된 임계값 배열에서 샘플로 데이터를 추출하되, 임계값을 5 step으로 추출
+# thresholds[0]은 max(예측확률)+1로 임의 설정됨. 이를 제외하기 위해 np.arange는 1부터 시작
+thr_index = np.arange(1, thresholds.shape[0],5)
+print('샘플 추출을 위한 임계값 배열의 index:', thr_index)
+print('샘플 index로 추출한 임계값:', thresholds[thr_index][::5])  # 수정된 부분
+
+# 5 step 단위로 추출된 임계값에 따른 FPR, TPR 값
+print('샘플 임계값별 FPR:', np.round(fprs[thr_index][::5], 3))  # 수정된 부분
+print('샘플 임계값별 TPR:', np.round(tprs[thr_index][::5], 3))  # 수정된 부분
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 샘플 추출을 위한 임계값 배열의 index: [ 1  6 11 16 21 26 31 36 41 46 51]
+샘플 index로 추출한 임계값: [0.96504653 0.4008847  0.10786876]
+샘플 임계값별 FPR: [0.    0.169 0.797]
+샘플 임계값별 TPR: [0.033 0.836 0.984]
+
+</aside>
+
+```python
+from sklearn.metrics import roc_curve
+
+# 레이블값이 1일 때의 예측 확률을 추출
+pred_proba_class1 = lr_clf.predict_proba(X_test)[:,1]
+print('max predict_proba:', np.max(pred_proba_class1))
+
+fprs, tprs, thresholds = roc_curve(y_test, pred_proba_class1)
+print('thresholds[0]:', thresholds[0])
+
+#반환된 임계값 배열 로우가 47건이므로 샘플로 10건만 추출하되 임계값을 5 step으로 추출
+thr_index = np.arange(0, thresholds.shape[0], 5)
+print('샘플 추출을 위한 임계값 배열의 index 10개:', thr_index)
+print('샘플용 10개의 임계값:', np.round(thresholds[thr_index],2))
+
+# 5 step 단위로 추출된 임계값에 따른 FPR, TPR 값
+print('샘플 임계값별 FPR:', np.round(fprs[thr_index],3))
+print('샘플 임계값별 TPR:', np.round(fprs[thr_index],3))
+```
+
+<aside>
+<img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2033.png)
+
+</aside>
+
+- AUC 구하기
+
+```python
+from sklearn.metrics import roc_auc_score
+
+pred_proba = lr_clf.predict_proba(X_test)[:, 1]
+roc_score = roc_auc_score(y_test, pred_proba)
+print('ROC AUC 값: {0:.4f}'.format(roc_score))
+```
+
+- 성능지표를 구하는 get_clf_eval() 함수에 ROC AUC Score까지 추가
+
+```python
+def get_clf_eval(y_test, pred=None, pred_proba=None):
+    confusion = confusion_matrix( y_test, pred)
+    accuracy = accuracy_score(y_test , pred)
+    precision = precision_score(y_test , pred)
+    recall = recall_score(y_test , pred)
+    f1 = f1_score(y_test,pred)
+    # ROC-AUC 추가 
+    roc_auc = roc_auc_score(y_test, pred_proba)
+    print('오차 행렬')
+    print(confusion)
+    # ROC-AUC print 추가
+    print('정확도: {0:.4f}, 정밀도: {1:.4f}, 재현율: {2:.4f}, F1: {3:.4f}, AUC:{4:.4f}'.format(accuracy, precision, recall, f1, roc_auc))
+    
+get_clf_eval(y_test, pred, pred_proba)
+```
