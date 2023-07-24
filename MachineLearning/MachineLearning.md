@@ -1,5 +1,7 @@
 # Machine Learning
 
+📖[https://github.com/wikibook/pymlrev2/tree/main](https://github.com/wikibook/pymlrev2/tree/main)
+
 # 개요
 
 ## 개요
@@ -110,7 +112,7 @@
 ### **주요 분류 방법**
 
 - **Naive Bayes 분류기**
-    - 자료의 분류를 베이즈 정리를 활용하여 판단ㄴ
+    - 자료의 분류를 베이즈 정리를 활용하여 판단
     - 나이브 베이즈 분류기는 조건부 확률 모델
     - 모든 특성값은 서로 독립이라고 가정
     - 구축이 쉽고 대규모 데이터셋에 유용
@@ -278,6 +280,12 @@
     
     ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%208.png)
     
+
+---
+
+---
+
+# 분류
 
 # iris 데이터 분류 예측 프로세스 실습
 
@@ -2026,7 +2034,7 @@ dtype: int64
 - 예시)
 - 의사가 암환자를 정상 환자로 잘못 진단한 것은 FN(False Negative)에 해당
 - 의사가 정상 환자를 암환자로 잘못 진단한 것은 FP(False Positive)에 해당
-- **정확도**는 방금 말했다시피 전체 중 맞게 예측할 확률을 의미한다.
+- **정확도**는 전체 중 맞게 예측할 확률을 의미한다.
 **정밀도**는 맞다고 예측했는데 실제 맞을 확률을 의미한다.
 **민감도**는 실제 맞았는데 맞다고 예측했을 확률을 의미한다.
 **특이도**는 실제 틀렸는데 틀렸다고 예측했을 확률을 의미한다.
@@ -2054,7 +2062,7 @@ confusion_matrix(y_test, fakepred)
 ### 정밀도와 재현율이란?
 
 - **정밀도**
-    - 예측을 Positive로 한 대상 중에 예측을 실제 값이 Posotove로 일치한 데이터의 비율
+    - 예측을 Positive로 한 대상 중에 예측을 실제 값이 Positive로 일치한 데이터의 비율
     - 정밀도 = TP / (FP + TP)
 - **재현율**
     - 실제값이 Positive인 대상 중에 예측과 실제 값이 Positive로 일치한 데이터의 비율
@@ -2071,8 +2079,7 @@ confusion_matrix(y_test, fakepred)
 ### 정밀도/재현율 트레이드오프(Trade off)
 
 - 정밀도 또는 재현율이 특별히 강조되어야 할 경우 분류의 결정 임계값(Threshold)을 조정해 정밀도 또는 재현율의 수치를 높일 수 있음
-- 정밀도와 재현율은 상호 보완적인 평가 지표이기 때문에 어느 한쪽을 강
-제로 높이면 다른 하나의 수치는 떨어지기 쉬움
+- 정밀도와 재현율은 상호 보완적인 평가 지표이기 때문에 어느 한쪽을 강제로 높이면 다른 하나의 수치는 떨어지기 쉬움
 - 정밀도/재현율의 트레이드오프(Trade-off)
     
     ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2029.png)
@@ -2169,7 +2176,7 @@ confusion_matrix(y_test, fakepred)
     print('pred_proba()결과 Shape: {0}'.format(pred_proba.shape))
     print('pred_proba array에서 앞 3개만 샘플로 추출 \n:', pred_proba[:3])
     
-    # 에측 확율 array와 예측 결과값 array를 concatenate하여 예측 확률과 결과값을 한눈에 확인
+    # 예측 확율 array와 예측 결과값 array를 concatenate하여 예측 확률과 결과값을 한눈에 확인
     pred_proba_result = np.concatenate([pred_proba, pred.reshape(-1,1)],axis =1)
     print('두개의 class 중에서 더 큰 확률을 클래스 값으로 예측 \n', pred_proba_result[:3])
     ```
@@ -2219,8 +2226,7 @@ confusion_matrix(y_test, fakepred)
     
     - 1.1보다 큰 값은 1로, 1.1보다 작거나 같은 값은 0으로 분류된 것을 확인
     - 분류 결정 임계값 0.5 기반에서 Binarizer를 이용하여 예측값 변환해보자
-    - predict_proba()의 두 번째 열인 1을 예측하는 확률을 뽑아서,
-    그것이 0.5보다 큰지 작은지를 Binarizer로 판단하고, 평가하는 것이다.
+    - predict_proba()의 두 번째 열인 1을 예측하는 확률을 뽑아서, 그것이 0.5보다 큰지 작은지를 Binarizer로 판단하고, 평가하는 것이다.
     
     ```python
     from sklearn.preprocessing import Binarizer
@@ -2403,8 +2409,7 @@ confusion_matrix(y_test, fakepred)
 ### F1 Score란?
 
 - F1 스코어(Score)는 정밀도와 재현율을 결합한 지표
-- 정밀도와 재현율이 어느 한쪽으로 치우치지 않는 수치를 나
-타낼 때 상대적으로 높은 값을 가짐
+- 정밀도와 재현율이 어느 한쪽으로 치우치지 않는 수치를 나타낼 때 상대적으로 높은 값을 가짐
 
 ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2032.png)
 
@@ -2482,17 +2487,12 @@ get_eval_by_threshold(y_test, pred_proba[:,1].reshape(-1,1), thresholds)
 
 ### ****ROC Curve와 AUC란?****
 
-- ROC 곡선(Receiver Operation Characteristic Curve)과 이에 기반한
-AUC 스코어는 이진 분류의 예측 성능 측정에서 중요하게 사용되는 지표
-- 일반적으로 의학 분야에서 많이 사용되지만, 머신러닝의 이진 분류 모델
-의 예측 성능을 판단하는 중요한 평가 지표
+- ROC 곡선(Receiver Operation Characteristic Curve)과 이에 기반한 AUC 스코어는 이진 분류의 예측 성능 측정에서 중요하게 사용되는 지표
+- 일반적으로 의학 분야에서 많이 사용되지만, 머신러닝의 이진 분류 모델의 예측 성능을 판단하는 중요한 평가 지표
 - ROC 곡선은 FPR(False Positive Rate)이 변할 때 TPR(True Positive Rate)이 어떻게 변하는지를 나타내는 곡선
-- FPR을 X축으로, TPR을 Y축으로 잡으면 FPR이 변화에 따른 TPR의 변
-화가 곡선 형태로 나타냄
-- 분류의 성능 지표로 사용되는 것은 ROC 곡선 면접에 기반한 AUC값
-으로 결정
-- AUC(Area Under Curve) 값이 ROC 곡선 밑의 면적을 구한 것으로써
-일반적으로 1에 가까울수록 좋은 수치
+- FPR을 X축으로, TPR을 Y축으로 잡으면 FPR이 변화에 따른 TPR의 변화가 곡선 형태로 나타냄
+- 분류의 성능 지표로 사용되는 것은 ROC 곡선 면접에 기반한 AUC값으로 결정
+- AUC(Area Under Curve) 값이 ROC 곡선 밑의 면적을 구한 것으로써일반적으로 1에 가까울수록 좋은 수치
 
 ### FPR의 변화에 따른 TPR의 변화 곡선
 
@@ -2588,3 +2588,1078 @@ def get_clf_eval(y_test, pred=None, pred_proba=None):
     
 get_clf_eval(y_test, pred, pred_proba)
 ```
+
+# **주요 분류**(Classification) **방법**
+
+## **LogisticRegression**
+
+### **LogisticRegression이란?**
+
+- 데이터가 어떤 범주에 속할 확률을 0에서 1 사이의 값으로 예측하고 그 확률에 따라 가능성이 더 높은 범주에 속하는 것으로 분류해주는 지도 학습 알고리즘
+- 독립변수를 input값으로 받아 종속변수가 1이 될 확률을 결과값으로 하는 sigmoid함수를 찾는 과정
+- sigmoid함수
+    
+    종속변수가 1이 될 확률의 결과값을 plot으로 그렸을 때 S자 곡선이 나오는 함수
+    
+- 종속변수가 이항형 문제(즉, 유효한 범주의 개수가 두개인 경우)를 지칭할 때 사용된다.
+- 사용 예시
+    - 제품이 불량인지 양품인지 분류
+    - 이메일이 스팸인지 정상메일인지 분류
+
+### 주요 하이퍼 파라미터
+
+- solver
+    - lbfgs(defalut) : 최적화 병렬
+    - liblinear : 다차원이고 작은 데이터에 적합
+    - newton-cg : 좀 더 정교한 최적화
+    - sag : 경사 하강법 기반의 최적화
+    - sega : sag와 유사, L1 정규화 가능
+- penalty : 규제. L1과 L2(default) 중 선택. 단, lbfgs, newton-cg, sag의 경우 L2만 가능.
+- C : 규제 강도를 조절. 값이 작을 수록 규제 강도가 크다.
+
+### 적용
+
+```python
+from sklearn.linear_model import LogisticRegression
+
+# step 1 : 모델선언
+model = LogisticRegression()
+
+# step 2 : 모델 학습
+model.fit(x_train, y_train)
+prediction = model.predict(x_valid)
+prediction[:5]
+```
+
+<aside>
+▶️ `array([2, 1, 0, 1, 0])`
+
+</aside>
+
+```python
+# step 4 : 평가
+(prediction == y_valid).mean()
+```
+
+<aside>
+▶️ `1.0`
+
+</aside>
+
+## ****SGDClassfier****
+
+### ****SGDClassfier이란?****
+
+- 확률적 경사 하강법
+- 경사 하강법을 이용한 정규화된 선형 분류 모델
+    - 경사 하강법 : 점진적으로 반복적인 계산을 통해 W파라미터(가중치) 값을 업데이트하면서 오류값이 최소가 되는 W파라미터를  구하는 방식
+- 전체 데이터(Batch) 대신 일부 데이터의 모듬(Mini-Batch)를 사용하여 계산
+- 다소 부정확할 수 있으나 계산 속도가 빠름.
+- 미니 배치를 사용하여 학습하기 때문에 배치 경사 하강법보다 큰 데잉터를 학습 시킬 때 효과적임.
+- 
+
+### 적용
+
+```python
+from IPython.display import Image
+from sklearn.linear_model import SGDClassifier
+
+# 모델 선언
+sgd = SGDClassifier(loss='log',
+                      max_iter=5000,  #최대반복수
+                      tol=1e-5,       # max_iter에 도달하지 않더라도 작업 중단
+                      random_state=2) # 실행할 때마다 바뀌지 않게 초깃값
+
+# 모델 학습
+sgd.fit(x_train, y_train)
+
+# 예측
+prediction = sgd.predict(x_valid)
+(prediction == y_valid).mean()
+```
+
+<aside>
+▶️ `0.8157894736842105`
+
+</aside>
+
+## K-Nearest Neighbor
+
+### K-Nearest Neighbor이란?
+
+- 최근접 이웃 알고리즘
+- 가장 가깝게 위치하는 멤버로 분류하는 방식
+
+### 주요 하이퍼 파라미터
+
+- n_neibors : 이웃의 개수를 지정 (기본값 5)
+- p : 거리를 재는 방법 (1 : 맨해튼 거리, 2 : 유클리안거리(기본))
+- n_jobs : CPU 코어 지증(기본값 1, -1은 모든 CPU 코어 사용)
+
+### 적용
+
+```python
+from sklearn.neighbors import KNeighborsClassifier
+
+knc = KNeighborsClassifier()
+knc.fit(x_train, y_train)
+
+knc_pred = knc.predict(x_valid)
+(knc_pred == y_valid).mean()
+```
+
+<aside>
+▶️ 0.9473684210526315
+
+</aside>
+
+```python
+knc = KNeighborsClassifier(n_neighbors=9)
+knc.fit(x_train, y_train)
+knc_pred = knc.predict(x_valid)
+
+(knc_pred == y_valid).mean()
+```
+
+<aside>
+▶️ 0.9736842105263158
+
+</aside>
+
+## ****SVC****
+
+### ****SVC란?****
+
+- 서포트 벡터 머신
+- 새로운 데이터가 어느 카테고리에 속할지 판단하는 비확률적 이진 선형 분류 모델을 만듦
+- 경계로 표현되는 데이터들 중 가장 큰 폭을 가진 경계를 찾는 알고리즘
+- 로지스틱 회귀분석과 같이 이진 분류만 가능
+
+### 적용
+
+```python
+from sklearn.svm import SVC
+
+svc = SVC(random_state = 0,)
+svc.fit(x_train, y_train)
+svc_pred = svc.predict(x_valid)
+
+(svc_pred == y_valid).mean()
+```
+
+<aside>
+▶️ 0.9736842105263158
+
+</aside>
+
+```python
+svc_pred[:5]
+```
+
+<aside>
+▶️ array([1, 0, 1, 1, 1])
+
+</aside>
+
+```python
+# 각 클래스별 확률값을 return 해주는 decision_function()
+svc.decision_function(x_valid)[:5]
+```
+
+<aside>
+▶️ array([[-0.20912048,  2.23376113,  0.86697649],
+       [ 2.22983376,  1.15500581, -0.25183065],
+       [-0.23052329,  2.21459287,  1.10104249],
+       [-0.23366655,  2.21779577,  1.10493102],
+       [-0.18191884,  2.23726065,  0.81363042]])
+
+</aside>
+
+## 의사 결정 나무(Decision Tree)
+
+### 의사결정나무란?
+
+- 스무고개 게임과 유사
+- if, else를 자동으로 찾아내 에측을 위한 규칙을 만드는 알고리즘
+- 구조
+    - 규칙 노드 : 규칙 조건
+    - 리프 노드 : 결정된 클래스 값
+    - 새로운 규칙 조건마다 서브 트리 생성
+- 많은 규칙이 있을 수록 복잡 & 깊이가 깊어질수록→ 과적합
+- 최대한 균일한 데이터 세트를 구성하도록 분할해야 함.
+- 균일도만 신경쓰면 되기 때문에 피처의 스케일링이나 정규화 같은 전처리 작업 불필요
+
+### 결정 트리 파라미터
+
+| 파라미터 명 | 설명 |
+| --- | --- |
+| min_sample_split | - 노드를 분리하기 위한 최소한의 샘플 데이터 수로 과적합을 제어하는 데 사용
+- 기본값은 2, 작게 설정할 수록 분할되는 노드가 많아져 과적합 가능성 증가 |
+| min_sample_leaf | - 분할이 될 경우 왼쪽과 오른쪽 브랜치 노드에서 가져야 할 최소한의 데이터 수
+- 과적합 제어 용도
+- 비대칭적 데이터의 경우 특정 클래스의 데이터가 극도로 작을 수 있으므로 이 경우는 작게 설정 |
+| max_feature | - 최적의 분할을 위해 고려할 최대 피처 개수
+- 기본값은 None으로 데이터 세트의 모든 피처를 사용해 분할
+- sqrt : 전체 피처 개수의 제곱근 만큼 선정
+- auto = sqrt
+- log : 전체 피처 중 log2(전체 피처 수)  |
+| max_depth | - 트리의 최대 깊이 규정
+- 기본값은 None → 클래스 값이 완벽하게 결정될 때까지 계속 분할 or min_sample_split보다 작아질 때 까지 깊이 증가 → 과적합 우려 |
+| max_leaf_nodes | 말단 노드(leaf)의 최대 개수  |
+
+### 시각화
+
+- 어떠한 규칙을 가지고 트리를 생성하는지 시각적으로 보여
+
+```python
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+import warnings
+warnings.filterwarnings('ignore')
+
+# DecisionTree Classifier 생성
+dt_clf = DecisionTreeClassifier(random_state=156)
+
+# 붓꽃 데이터를 로딩하고, 학습과 테스트 데이터 셋으로 분리
+iris_data = load_iris()
+X_train , X_test , y_train , y_test = train_test_split(iris_data.data, iris_data.target,
+                                                       test_size=0.2,  random_state=11)
+
+# DecisionTreeClassifer 학습. 
+dt_clf.fit(X_train , y_train)
+```
+
+```python
+from sklearn.tree import export_graphviz
+
+# export_graphviz()의 호출 결과로 out_file로 지정된 tree.dot 파일을 생성함. 
+export_graphviz(dt_clf, out_file="tree.dot", class_names=iris_data.target_names , \
+feature_names = iris_data.feature_names, impurity=True, filled=True)
+```
+
+```python
+import graphviz
+
+# 위에서 생성된 tree.dot 파일을 Graphviz 읽어서 Jupyter Notebook상에서 시각화 
+with open("tree.dot") as f:
+    dot_graph = f.read()
+graphviz.Source(dot_graph)
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2034.png)
+
+</aside>
+
+- 피처별 중요도
+
+```python
+import seaborn as sns
+import numpy as np
+%matplotlib inline
+
+# feature importance 추출 
+print("Feature importances:\n{0}".format(np.round(dt_clf.feature_importances_, 3)))
+
+# feature별 importance 매핑
+for name, value in zip(iris_data.feature_names , dt_clf.feature_importances_):
+    print('{0} : {1:.3f}'.format(name, value))
+
+# feature importance를 column 별로 시각화 하기 
+sns.barplot(x=dt_clf.feature_importances_ , y=iris_data.feature_names)
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2035.png)
+
+</aside>
+
+# 앙상블 학습
+
+## 개요
+
+- 여러 개의 분류기를 생성하고 그  예측을 결합함으로써 보다 정확한 최종 예측을 도출하는 기법
+- 단일 분류기보다 신뢰성이 높은 예측값을 얻는다.
+- 앙상블 학습의 유형으로는 보팅, 배깅, 부스팅, 스태깅 등이 있다.
+
+## 보팅(Voting)
+
+### 보팅이란?
+
+- 여러 개의 분류기가 투표를 통해 최종 예측 결과를 결정
+- 배깅(Vagging)과 다른 점 : 보팅은 서로 다른 알고리즘을 가진 분류기를 결합. 배깅은 모두 같은 유형의 알고리즘 기반(데이터 샘플링은 다르게 가져감)
+
+### 보팅의 유형
+
+- 하드 보팅 (Hard Voting)
+    - 분류기들이 예측한 결과값들 중 다수의 분류기가 결정한 예측값을 최종 보팅 결과값으로 선정
+- 소프트 보팅 (Soft Voting)
+    - 레이블 값 결정 확률을 모두 더하고 이를 평균해서 이들 중 확률이 가장 높은 레이블 값을 최종 보팅 결과값으로 선정
+
+### 보팅 분류기(Voting Classifier)
+
+- 사이킷런은 보팅 방식의 앙상블을 구현한 VotingClassfier 클래스를 제공
+- **유방암 데이터 세트 예측 분석**
+    
+    ```python
+    import pandas as pd
+    
+    from sklearn.ensemble import VotingClassifier
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.datasets import load_breast_cancer
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import accuracy_score
+    
+    cancer = load_breast_cancer()
+    
+    data_df = pd.DataFrame(cancer.data, columns=cancer.feature_names)
+    data_df.head(3)
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2036.png)
+    
+    </aside>
+    
+    - 개별 모델은 로지스틱 회귀와 KNN
+    - VotingClassifier의 인자
+        - estimators : 리스트 값으로, 보팅에 사용될 여러 개의 Classfier 객체들을 튜플 형식으로 입력 받는다.
+        - voting : hard, soft 보팅 방식 지정
+    
+    ```python
+    # 개별 모델은 로지스틱 회귀와 KNN 임. 
+    lr_clf = LogisticRegression(solver='liblinear')
+    knn_clf = KNeighborsClassifier(n_neighbors=8)
+    
+    # 개별 모델을 소프트 보팅 기반의 앙상블 모델로 구현한 분류기 
+    vo_clf = VotingClassifier( estimators=[('LR',lr_clf),('KNN',knn_clf)] , voting='soft' )
+    
+    X_train, X_test, y_train, y_test = train_test_split(cancer.data, cancer.target, 
+                                                        test_size=0.2 , random_state= 156)
+    
+    # VotingClassifier 학습/예측/평가. 
+    vo_clf.fit(X_train , y_train)
+    pred = vo_clf.predict(X_test)
+    print('Voting 분류기 정확도: {0:.4f}'.format(accuracy_score(y_test , pred)))
+    
+    # 개별 모델의 학습/예측/평가.
+    classifiers = [lr_clf, knn_clf]
+    for classifier in classifiers:
+        classifier.fit(X_train , y_train)
+        pred = classifier.predict(X_test)
+        class_name= classifier.__class__.__name__
+        print('{0} 정확도: {1:.4f}'.format(class_name, accuracy_score(y_test , pred)))
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> Voting 분류기 정확도: 0.9561
+    LogisticRegression 정확도: 0.9474
+    KNeighborsClassifier 정확도: 0.9386
+    
+    </aside>
+    
+    - 보팅 분류기 정확도가 조금 높게 나왔으나, 눈에 띄는 성능 향상은 아님.
+    - 그럼에도 불구하고 단일 알고리즘보다는 뛰어난 예측 성능을 가짐.
+    
+
+## 배깅(Bagging)
+
+### 배깅이란?
+
+- 같은 알고리즘으로 여러 개의 분류기를 만들어서 보팅으로 최종 결정하는 알고리즘
+- 서로 다른 데이터 샘플링을 가져가면서 학습을 수행
+- 배깅의 대표적인 알고리즘은 ‘랜덤 포레스트’
+
+### 랜덤 포레스트
+
+- 랜덤 포레스트의 기반 알고리즘은 결정트리
+- 여러 개의 결정트리 분류기가 전체 데이터에서 배깅 방식으로 각자의 데이터 샘플링해 개별적으로 학습 수행 후 최종 보팅을 통해 예측 결정함.
+- 개별 트리가 학습하는 데이터  세트는 전체 데이터에서 일부가 중첩되게 샘플링된 데이터 세트임. ⇒ 부트스트래핑 분할 방식
+- 이렇게 생성된 데이터 세트에 결정 트리 분류기를 적용하는 것이 랜덤 포레스
+
+### RandomForesstClassifier
+
+- **사용자 행동 인식 데이터 세트**
+    - 결정트리에서 사용된 정제된 데이터
+    
+    ```python
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.metrics import accuracy_score
+    import pandas as pd
+    import warnings
+    warnings.filterwarnings('ignore')
+    
+    # 결정 트리에서 사용한 get_human_dataset( )을 이용해 학습/테스트용 DataFrame 반환
+    X_train, X_test, y_train, y_test = get_human_dataset()
+    
+    # 랜덤 포레스트 학습 및 별도의 테스트 셋으로 예측 성능 평가
+    rf_clf = RandomForestClassifier(random_state=0)
+    rf_clf.fit(X_train , y_train)
+    pred = rf_clf.predict(X_test)
+    accuracy = accuracy_score(y_test , pred)
+    print('랜덤 포레스트 정확도: {0:.4f}'.format(accuracy))
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 랜덤 포레스트 정확도: 0.9253
+    
+    </aside>
+    
+
+### 랜덤 포레스트 하이퍼 파라미터 및 튜닝
+
+- **하이퍼 파라미터 종류**
+    - n_estimatirs
+        - 랜덤 포레스트에서 결정 트리 개수를 지정.
+        - 디폴트는 10개
+    - max_features
+        - 최적 분할을 위해 고려할 최대 feature 수
+        - 디폴트는 auto (=sqrt) ⇒ sqrt(전체 feature 수)
+    - max_depth, min_sample, min_sample_split와 같이 결정트리에서 사용된 하이퍼 파라미터가 동일하게 적용됨.
+- **사용자 행동 인식 데이터 세트**
+    - GridSearchCV 이용
+    - n_estimators = 100, CV = 2 로 설정해 최적 파라미터 구해보자
+    
+    ```python
+    from sklearn.model_selection import GridSearchCV
+    
+    params = {
+        'n_estimators':[100], # 결정 트리 개수 지정
+        'max_depth' : [6, 8, 10, 12], # 트리의 최대 깊이 지정
+        'min_samples_leaf' : [8, 12, 18 ], # 분할된 경우 왼족, 오른쪽의 브랜치 노드에서 가져가야 할 최소한의 샘플 데이터 수
+        'min_samples_split' : [8, 16, 20] # 노드를 분할하기 위한 최소한의 샘플 데이터 수 => 과적합 제어
+    }
+    # RandomForestClassifier 객체 생성 후 GridSearchCV 수행
+    rf_clf = RandomForestClassifier(random_state=0, n_jobs=-1)
+    grid_cv = GridSearchCV(rf_clf , param_grid=params , cv=2, n_jobs=-1 )
+    grid_cv.fit(X_train , y_train)
+    
+    print('최적 하이퍼 파라미터:\n', grid_cv.best_params_)
+    print('최고 예측 정확도: {0:.4f}'.format(grid_cv.best_score_))
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 최적 하이퍼 파라미터:
+     {'max_depth': 10, 'min_samples_leaf': 8, 'min_samples_split': 8, 'n_estimators': 100}
+    
+    최고 예측 정확도: 0.9180
+    
+    </aside>
+    
+    - 'max_depth': 10, 'min_samples_leaf': 8, 'min_samples_split': 8 일 때 두개의 CV 세트에서 약 91.8%의 평균 정확도가 측정 됨.
+    
+    - 이 추출된 파라미터로 다시 RandomForestClassfier 학습 후 별도의 테스트 데이터세트에서 예측 성능 측정
+    
+    ```python
+    rf_clf1 = RandomForestClassifier(n_estimators=100, max_depth=10, min_samples_leaf=8, \
+                                     min_samples_split=8, random_state=0)
+    rf_clf1.fit(X_train , y_train)
+    pred = rf_clf1.predict(X_test)
+    print('예측 정확도: {0:.4f}'.format(accuracy_score(y_test , pred)))
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> 예측 정확도: 0.9196
+    
+    </aside>
+    
+    - 피처 중요도 막대그래프 시각화
+    
+    ```python
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    %matplotlib inline
+    
+    ftr_importances_values = rf_clf1.feature_importances_
+    ftr_importances = pd.Series(ftr_importances_values,index=X_train.columns  )
+    ftr_top20 = ftr_importances.sort_values(ascending=False)[:20]
+    
+    plt.figure(figsize=(8,6))
+    plt.title('Feature importances Top 20')
+    sns.barplot(x=ftr_top20 , y = ftr_top20.index)
+    fig1 = plt.gcf()
+    plt.show()
+    plt.draw()
+    fig1.savefig('rf_feature_importances_top20.tif', format='tif', dpi=300, bbox_inches='tight')
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" />
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2037.png)
+    
+    </aside>
+    
+
+## GBM(Gradient Boosting Machine)
+
+### 부스팅이란?
+
+- 여러 개의 약한 학습기(week learner)를 순차적으로 학습-예측하면서 잘못 예측한 데이터에 가중치 부여를 통해 개선해 가면서 학습하는 방식
+- 에이다부스트와 GBM이 있음.
+
+### GBM
+
+- 가중치 업데이트를 경사 하강법을 이용
+- 반복 수행을 통해 오류를 최소화할 수 있도록 가중치의 업데이트 값을 도출하는 기법
+
+### GradientBoostingClassfier
+
+- **사용자 행동 인식 데이터 세트**
+    - 결정트리에서 사용된 정제된 데이터 사용
+    
+    ```python
+    from sklearn.ensemble import GradientBoostingClassifier
+    import time
+    import warnings
+    warnings.filterwarnings('ignore')
+    
+    X_train, X_test, y_train, y_test = get_human_dataset()
+    
+    # GBM 수행 시간 측정을 위함. 시작 시간 설정.
+    start_time = time.time()
+    
+    gb_clf = GradientBoostingClassifier(random_state=0)
+    gb_clf.fit(X_train , y_train)
+    gb_pred = gb_clf.predict(X_test)
+    gb_accuracy = accuracy_score(y_test, gb_pred)
+    
+    print('GBM 정확도: {0:.4f}'.format(gb_accuracy))
+    print("GBM 수행 시간: {0:.1f} 초 ".format(time.time() - start_time))
+    ```
+    
+    <aside>
+    <img src="https://www.notion.so/icons/playback-play_red.svg" alt="https://www.notion.so/icons/playback-play_red.svg" width="40px" /> GBM 정확도: 0.9389
+    GBM 수행 시간: 547.3 초
+    
+    </aside>
+    
+    - 기본 파라미터만으로 000%의 예측 정확도로 랜덤 포레스트보다 나은 예측 성능을 나타냄.
+    - 그러나 수행시간이 오래 걸리고 하이퍼 파라미터 튜닝 노력도 더  필요
+
+### GBM 하이퍼 파라미터
+
+- n_estimators, max_depth, max_features와 같은 트리 파라미터는 결정 트리, 랜덤 포레스트에서 언급했으므로 생략
+- loss
+    - 경사 하강법에서 사용할 비용 함수를 지정
+    - 보통 기본값인 deviance를 그대로 적용
+- learnig_rate
+    - GBM이 학습을 진행할 때 마다 적용하는 학습률
+    - Weak learner가 순차적으로 오류 값을 보정해 나가는데 적용하는 계수. 0~1 사이의 값을 지정할 수 있으며 기본 값은 0.1임.
+    - 너무 작은 값을 적용하면 예측 성능이 높아질 가능성이 높다.
+    - 반대로 큰 값을 적용하면 최소 오류 값을 찾지 못하고 그냥 지나쳐 버려 예측 성능이 떨어질 가능성이 높다.
+        
+        ⇒ n_estimators와 조합해 사용 해야 함.
+        
+- n_estimators
+    - weak learner의 개수
+    - 기본값 = 100
+    - 많을 수록 예측 성능이 일정 수준까지 높아질 수 있음.
+- subsample
+    - weak learner가 학습에 사용하는 데이터 샘플링의 비율
+    - 기본값 = 1 (전체 학습 데이터를 기반으로 학습)
+    0.5 이면 전체 학습 데이터의 50%를 학습
+    - 과적합이 염려되는 경우 1보다 작은 값으로 설정
+    
+
+## XGBoost(eXtra Gradient Boost)
+
+### XGBoost란?
+
+- 부스팅 계열 알고리즘
+- 트리 기반의 앙상블 학습
+- 분류에 있어 다른 머신러닝보다 뛰어난 예측 성능
+- 주요 장점
+    - 뛰어난 예측 성능
+    - GBM 대비 빠른 수행 시간
+    - 과적합 규제
+    - Tree puring (지나치게 많은 분할 발생 방지)
+    - 자체 내장된 교차 검증
+    - 결손값 자체 처리
+
+### XGBoost 하이퍼 파라미터
+
+- learning_rate
+    - GBM의 학습률과 같은 파라미터
+    - 부스팅 스텝을 반복적으로 수행할 때 업데이트되는 학습률 값
+    - 디폴트 = 0.1, 보통 0.01~0.2 선호
+- subsample
+    - 트리가 커져서 과적합되는 것을 제어하기 위해 데이터를 샘플링하는 비율을 지정
+    - 0.5로 지정하면 전체 데이터의 절반을 트리르 생성하는 데 사용
+    - 보통 0,5~1 사이의 값을 사용
+- reg_lambda
+    - L2 Regularization 적용 값
+    - 피처 개수가 많을 경우 적용을 검토하며 값이 클수록 과적합 감소 효과가 있음.
+- reg_alpha
+    - L1 Regularization 적용 값
+    - 피처 개수가 많을 경우 적용을 검토하며 값이 클수록 과적합 감소 효과가 있음.
+
+### XGBClassifier
+
+- **유방암 데이터 세트**
+    - xgboost 설치 필요
+    
+    ```python
+    !pip install xgboost
+    ```
+    
+    ```python
+    import xgboost as xgb
+    from xgboost import plot_importance
+    import pandas as pd
+    import numpy as np
+    from sklearn.datasets import load_breast_cancer
+    from sklearn.model_selection import train_test_split
+    import warnings
+    warnings.filterwarnings('ignore')
+    
+    dataset = load_breast_cancer()
+    X_features= dataset.data
+    y_label = dataset.target
+    
+    cancer_df = pd.DataFrame(data=X_features, columns=dataset.feature_names)
+    cancer_df['target']= y_label
+    cancer_df.head(3)
+    ```
+    
+    <aside>
+    ▶️
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2038.png)
+    
+    </aside>
+    
+    ```python
+    # cancer_df에서 feature용 DataFrame과 Label용 Series 객체 추출
+    # 맨 마지막 칼럼이 Label임. Feature용 DataFrame은 cancer_df의 첫번째 칼럼에서 맨 마지막 두번째 칼럼까지를 :-1 슬라이싱으로 추출.
+    X_features = cancer_df.iloc[:, :-1]
+    y_label = cancer_df.iloc[:, -1]
+    
+    # 전체 데이터 중 80%는 학습용 데이터, 20%는 테스트용 데이터 추출
+    X_train, X_test, y_train, y_test=train_test_split(X_features, y_label,
+                                             test_size=0.2, random_state=156 )
+    ```
+    
+    - 모델의 예측 성능을  평가하는 get_clf_eval() 생성
+    
+    ```python
+    from sklearn.metrics import confusion_matrix, accuracy_score
+    from sklearn.metrics import precision_score, recall_score
+    from sklearn.metrics import f1_score, roc_auc_score
+    
+    def get_clf_eval(y_test, pred=None, pred_proba=None):
+        confusion = confusion_matrix( y_test, pred)
+        accuracy = accuracy_score(y_test , pred)
+        precision = precision_score(y_test , pred)
+        recall = recall_score(y_test , pred)
+        f1 = f1_score(y_test,pred)
+        # ROC-AUC 추가 
+        roc_auc = roc_auc_score(y_test, pred_proba)
+        print('오차 행렬')
+        print(confusion)
+        # ROC-AUC print 추가
+        print('정확도: {0:.4f}, 정밀도: {1:.4f}, 재현율: {2:.4f},\
+        F1: {3:.4f}, AUC:{4:.4f}'.format(accuracy, precision, recall, f1, roc_auc))
+    ```
+    
+    - 예측 수행
+    
+    ```python
+    # 사이킷런 래퍼 XGBoost 클래스인 XGBClassifier 임포트
+    from xgboost import XGBClassifier
+    
+    xgb_wrapper = XGBClassifier(n_estimators=400, learning_rate=0.1, max_depth=3)
+    xgb_wrapper.fit(X_train, y_train)
+    w_preds = xgb_wrapper.predict(X_test)
+    w_pred_proba = xgb_wrapper.predict_proba(X_test)[:, 1]
+    ```
+    
+    - 예측 성능 평가
+    
+    ```python
+    get_clf_eval(y_test , w_preds, w_pred_proba)
+    ```
+    
+    <aside>
+    ▶️ 오차 행렬
+    [[35  2]
+     [ 1 76]]
+    정확도: 0.9737, 정밀도: 0.9744, 재현율: 0.9870,    F1: 0.9806, AUC:0.9951
+    
+    </aside>
+    
+
+## LightGBM
+
+### LightGBM이란?
+
+- 부스팅 계열 알고리즘
+- 리프 중심 트리 분할
+    - 최대 손실 값을 가지는 리프 노드를 지속적으로 분할
+    - 트리의 깊이가 깊어지고 비대칭적인 규칙 트리 생성
+    - 예측 오류 손실을 최소화
+- 사이킷런 패키지가 아님
+- XGBoost 대비 장점
+    - 빠른 학습과 예측 수행 시간
+    - 더 적은 메모리 사용
+    - 카테고리형 피처의 자동 변환과 최적 분할
+    (원-핫 인코딩 등을 사용하지 않고도 카테고리형 피처를 최적으로 변환하고 이에 따른 노드 분할 수행)
+
+### LightGBM 하이퍼 파라미터
+
+- **주요 하이퍼 파라미터**
+    - num_iterations [default=100] : 반복 수행하려는 트리의 개수
+    - learnig_rate [default=0.1] : 0~1 사이의 값을 지정하며 부스팅 스텝을 반복적으로 수행할 때 업데이트되는 확률 값
+    - max_depth [default=-1] : 트리 기반 알고리즘의 max_depth
+    - min_child_samples [default=20] : 결정 트리의 min_sample_leaf와 같은 파라미터
+    - num_leaves [default=31] : 하나의 트리가 가질 수 있는 최대 리프 개수
+    - boosting [default=gbdt] : 부스팅의 트리를 생성하는 알고리즘 기술
+        - gbdt : 일반적인 그래디언트 부스팅 결정 트리
+        - rf : 랜덤 포레스트
+    - bagging_fraction [default=1.0] : 트리가 커져서 과적합되는 것을 제어하기 위해 데이터 샘플링하는 비율을 지정
+    - feature_fraction [default=1.0] : 개별 트리를 학습할 때마다 무작위로 선택하는 피처의 비율. 과적합을 막기 위해 사용.
+    - lambda_l2 [default=0.0] : L2 regulation 제어를 위한 값
+    - lambda_l1 [default=0.0] : L1 regulation 제어를 위한 값
+- **하이퍼 파라미터 튜닝 방안**
+    - num_leaves의 개수를 중심으로 min_child_saples, max_depth를 함께 조정하면서 모델의 복잡도를 줄이는 것이 기본 튜닝 방안
+    - learning_rate를 작게 하면서 n_estimators를 크게 하는 부스팅 계열 튜닝 방안
+
+### LGBMClassifier
+
+- **위스콘신 유방암 예측**
+    
+    ```python
+    !pip install lightgbm
+    ```
+    
+    ```python
+    from lightgbm import LGBMClassifier
+    import pandas as pd
+    import numpy as np
+    from sklearn.datasets import load_breast_cancer
+    from sklearn.model_selection import train_test_split
+    from lightgbm import LGBMClassifier
+    
+    dataset = load_breast_cancer()
+    
+    cancer_df = pd.DataFrame(data=dataset.data, columns=dataset.feature_names)
+    cancer_df['target'] = dataset.target
+    X_features = cancer_df.iloc[:, :-1]
+    y_label = cancer_df.iloc[:, -1]
+    
+    # 전체 데이터 중 80%는 학습용 데이터, 20%는 테스트용 데이터 추출
+    X_train, X_test, y_train, y_test = train_test_split(X_features, y_label, test_size=0.2, random_state=156)
+    
+    # 위에서 만든 X_train, y_train을 다시 쪼개서 90%는 학습과 10%는 검증용 데이터로 분리
+    X_tr, X_val, y_tr, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=156)
+    
+    # 앞서 LightGBM에서는 조기 중단을 위해 n_estimators 값을 적절하게 설정하는 방법을 사용.
+    lgbm_wrapper = LGBMClassifier(n_estimators=1000, learning_rate=0.05, verbosity=-1)  # -1로 설정하여 메시지 출력하지 않음
+    
+    # LightGBM는 eval_set에 검증 세트를 지정하여 학습 중 검증 세트의 성능 모니터링
+    evals = [(X_tr, y_tr), (X_val, y_val)]
+    lgbm_wrapper.fit(X_tr, y_tr, eval_metric="logloss", eval_set=evals)
+    
+    # 검증 세트에서 성능이 개선되지 않으면 자동으로 학습 중단됨
+    preds = lgbm_wrapper.predict(X_test)
+    pred_proba = lgbm_wrapper.predict_proba(X_test)[:, 1]
+    ```
+    
+    ```python
+    from sklearn.metrics import confusion_matrix, accuracy_score
+    from sklearn.metrics import precision_score, recall_score
+    from sklearn.metrics import f1_score, roc_auc_score
+    
+    def get_clf_eval(y_test, pred=None, pred_proba=None):
+        confusion = confusion_matrix( y_test, pred)
+        accuracy = accuracy_score(y_test , pred)
+        precision = precision_score(y_test , pred)
+        recall = recall_score(y_test , pred)
+        f1 = f1_score(y_test,pred)
+        # ROC-AUC 추가 
+        roc_auc = roc_auc_score(y_test, pred_proba)
+        print('오차 행렬')
+        print(confusion)
+        # ROC-AUC print 추가
+        print('정확도: {0:.4f}, 정밀도: {1:.4f}, 재현율: {2:.4f},\
+        F1: {3:.4f}, AUC:{4:.4f}'.format(accuracy, precision, recall, f1, roc_auc))
+    ```
+    
+    ```python
+    get_clf_eval(y_test, preds, pred_proba)
+    ```
+    
+    <aside>
+    ▶️ 오차 행렬
+    [[34  3]
+     [ 2 75]]
+    정확도: 0.9561, 정밀도: 0.9615, 재현율: 0.9740,    F1: 0.9677, AUC:0.9940
+    
+    </aside>
+    
+    ```python
+    # plot_importance( )를 이용하여 feature 중요도 시각화
+    from lightgbm import plot_importance
+    import matplotlib.pyplot as plt
+    %matplotlib inline
+    
+    fig, ax = plt.subplots(figsize=(10, 12))
+    plot_importance(lgbm_wrapper, ax=ax)
+    plt.savefig('lightgbm_feature_importance.tif', format='tif', dpi=300, bbox_inches='tight')
+    ```
+    
+    <aside>
+    ▶️
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2039.png)
+    
+    </aside>
+    
+
+## Staking
+
+### Staking이란?
+
+- 개별적인 여러 알고리즘을 서로 결합해 예측 결과를 도출
+- 위는 배깅, 부스팅과 같은 특징이지만 개별 알고리즘으로 예측한 데이터를 기반으로 다시 예측을 수행한다는 차이가 있다.
+⇒ 개별 알고리즘의 예측 결과 데이터 세트를 최종 메타 데이터 세트로 만들어 별도 ML 알고리즘으로 최종 학습 수행하고 테스트 데이터를 기반으로 다시 최종 예측을 수
+
+---
+
+---
+
+# 회귀
+
+# 회귀란?
+
+## 회귀의 특징
+
+- 예측 값이 연속형 숫자 값이다. (분류는 이산형 클래스)
+- 회귀 예측의 핵심 : 주어진 피처와 결정 값 데이터 기반에서 학습을 통해 최적의 회귀 계수를 찾아내는 것
+- 최적의 회귀 모델을 만든 다는 것 = 전체 데이터의 잔차(오류 값) 합이 최소가 되는 모델을 만드는 것
+- 동시에 오류 값 합이 최소가 될 수 있는 최적의 회귀 계수를 찾는 것
+    - 보통 오류 합 계산할 때는 절대값을 취해서 더하거나 (Mean Absolute Eooro) 오류 값의 제곱을 구해서 더하는 방식 (RSS)
+    - 일반적으로 RSS 사용
+
+# 주요 회귀  방법
+
+## LinearRegression 클래스
+
+### LinearRegression 란?
+
+- RSS를 최소화해 OLS(Ordiary Least Squares) 추정 방식
+
+### 적용
+
+- **보스턴 주택 가격 회귀 구현**
+    
+    ```python
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import seaborn as sns
+    from scipy import stats
+    from sklearn.datasets import load_boston
+    import warnings
+    warnings.filterwarnings('ignore')  #사이킷런 1.2 부터는 보스턴 주택가격 데이터가 없어진다는 warning 메시지 출력 제거
+    %matplotlib inline
+    
+    # boston 데이타셋 로드
+    boston = load_boston()
+    
+    # boston 데이타셋 DataFrame 변환 
+    bostonDF = pd.DataFrame(boston.data , columns = boston.feature_names)
+    
+    # boston dataset의 target array는 주택 가격임. 이를 PRICE 컬럼으로 DataFrame에 추가함. 
+    bostonDF['PRICE'] = boston.target
+    print('Boston 데이타셋 크기 :',bostonDF.shape)
+    bostonDF.head()
+    ```
+    
+    <aside>
+    ▶️ Boston 데이타셋 크기 : (506, 14)
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2040.png)
+    
+    </aside>
+    
+    - Null 값 없으며, 모두 float 형
+    
+    - 각 컬럼별로 주택가격에 미치는 영향도를 조사
+        - 8개의 컬럼에 대해 값이 증가할수록 PRICE 값이 어떻게 변하는지 확인
+    
+    ```python
+    # 2개의 행과 4개의 열을 가진 subplots를 이용. axs는 4x2개의 ax를 가짐.
+    fig, axs = plt.subplots(figsize=(16,8) , ncols=4 , nrows=2)
+    lm_features = ['RM','ZN','INDUS','NOX','AGE','PTRATIO','LSTAT','RAD']
+    for i , feature in enumerate(lm_features):
+        row = int(i/4)
+        col = i%4
+        # 시본의 regplot을 이용해 산점도와 선형 회귀 직선을 함께 표현
+        sns.regplot(x=feature , y='PRICE',data=bostonDF , ax=axs[row][col])
+    
+    fig1 = plt.gcf()
+    fig1.savefig('p322_boston.tif', format='tif', dpi=300, bbox_inches='tight')
+    ```
+    
+    <aside>
+    ▶️
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2041.png)
+    
+    </aside>
+    
+    - 다른 컬럼보다 RM과 LSTAT의 PRICE 영향도가 가장 두드러지게 나타남.
+        - RM(방 개수)가 클수록 가격 증가
+        - LSTAT(하위 계층 비율)이 많을수록 가격 감소
+    
+    - 학습과 테스트 데이터 세트로 분리하고 학습/예측/평가 수행
+    
+    ```python
+    from sklearn.model_selection import train_test_split
+    from sklearn.linear_model import LinearRegression
+    from sklearn.metrics import mean_squared_error, r2_score
+    
+    y_target = bostonDF['PRICE']
+    X_data = bostonDF.drop(['PRICE'],axis=1,inplace=False)
+    
+    X_train , X_test , y_train , y_test = train_test_split(X_data , y_target ,test_size=0.3, random_state=156)
+    
+    # Linear Regression OLS로 학습/예측/평가 수행. 
+    lr = LinearRegression()
+    lr.fit(X_train ,y_train )
+    y_preds = lr.predict(X_test)
+    mse = mean_squared_error(y_test, y_preds)
+    rmse = np.sqrt(mse)
+    
+    print('MSE : {0:.3f} , RMSE : {1:.3F}'.format(mse , rmse))
+    print('Variance score : {0:.3f}'.format(r2_score(y_test, y_preds)))
+    ```
+    
+    <aside>
+    ▶️ MSE : 17.297 , RMSE : 4.159
+    Variance score : 0.757
+    
+    </aside>
+    
+    ```python
+    print('절편 값:',lr.intercept_)
+    print('회귀 계수값:', np.round(lr.coef_, 1))
+    ```
+    
+    <aside>
+    ▶️ 절편 값: 40.99559517216412
+    회귀 계수값: [ -0.1   0.1   0.    3.  -19.8   3.4   0.   -1.7   0.4  -0.   -0.9   0.
+      -0.6]
+    
+    </aside>
+    
+    - coef_ 속성은 회귀 계수 값만 가지고 있으므로 이를 피처별 회귀 계수 값으로 다시 매핑
+    
+    ```python
+    # 회귀 계수를 큰 값 순으로 정렬하기 위해 Series로 생성. index가 칼럼명에 유의
+    coeff = pd.Series(data=np.round(lr.coef_, 1), index=X_data.columns )
+    coeff.sort_values(ascending=False)
+    ```
+    
+    <aside>
+    ▶️ RM          3.4
+    CHAS        3.0
+    RAD         0.4
+    ZN          0.1
+    INDUS       0.0
+    AGE         0.0
+    TAX        -0.0
+    B           0.0
+    CRIM       -0.1
+    LSTAT      -0.6
+    PTRATIO    -0.9
+    DIS        -1.7
+    NOX       -19.8
+    dtype: float64
+    
+    </aside>
+    
+    - 교차 검증
+    
+    ```python
+    from sklearn.model_selection import cross_val_score
+    
+    y_target = bostonDF['PRICE']
+    X_data = bostonDF.drop(['PRICE'],axis=1,inplace=False)
+    lr = LinearRegression()
+    
+    # cross_val_score( )로 5 Fold 셋으로 MSE 를 구한 뒤 이를 기반으로 다시  RMSE 구함. 
+    neg_mse_scores = cross_val_score(lr, X_data, y_target, scoring="neg_mean_squared_error", cv = 5)
+    rmse_scores  = np.sqrt(-1 * neg_mse_scores)
+    avg_rmse = np.mean(rmse_scores)
+    
+    # cross_val_score(scoring="neg_mean_squared_error")로 반환된 값은 모두 음수 
+    print(' 5 folds 의 개별 Negative MSE scores: ', np.round(neg_mse_scores, 2))
+    print(' 5 folds 의 개별 RMSE scores : ', np.round(rmse_scores, 2))
+    print(' 5 folds 의 평균 RMSE : {0:.3f} '.format(avg_rmse))
+    ```
+    
+    <aside>
+    ▶️ 5 folds 의 개별 Negative MSE scores:  [-12.46 -26.05 -33.07 -80.76 -33.31]
+     5 folds 의 개별 RMSE scores :  [3.53 5.1  5.75 8.99 5.77]
+     5 folds 의 평균 RMSE : 5.829
+    
+    </aside>
+    
+
+# 회귀 평가 지표
+
+## MAE
+
+### MAE란?
+
+- Mean Absolute Error
+- 실제 값과 예측값의 차이를 절댓값으로 변환해 평균
+
+### 적용
+
+```python
+
+```
+
+## MSE
+
+### MSE란?
+
+- Mean Squared Error
+- 실제 값과 예측값의 차이를 제곱해 평균
+
+### 적용
+
+```python
+
+```
+
+## RMSE
+
+### RMSE란?
+
+- MSE 값은 오류의 제곱을 구하므로 실제 오류 평균보다 더 커지는 특성이 있으므로 MSE에 루트를 씌운 것이 RMSE
+
+### 적용
+
+```python
+
+```
+
+## R²
+
+### R²란?
+
+- 분산 기반으로 예측 성능 평가
+- 실제 값의 분산 대비 예측값의 분산 비율
+- 1에 가까울수록 예측 정확도가 높다.
