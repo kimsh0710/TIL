@@ -885,7 +885,7 @@ print('## 평균 검증 정확도:', np.mean(cv_accuracy))
 
 - 3개의 Stratified K 폴드로 교차 검증한 결과 평균 검증 정확도가 약 96.04%로 측정되었다.
 - Stratified K 폴드의 경우 원본 데이터의 레이블 분포도 특성을 반영한 학습 및 검증 데이터 세트를 만들 수 있으므로 왜곡된 레이블 데이터 세트에서는 반드시 Stratified K 폴드를 이용해 교차 검증해야 한다.
-- **사실, 일반적으로 분류(Classification)에서의 교차 검증은 K 폴드가 아니라 Stratified K 폴드로 분할돼야 한다.**
+- **사실, 일반적으로 분류(Classification)에서의 교차 검증은 K 폴드가 아니라 Stratified K 폴드로 분할해야 한다.**
 
 ## ****cross_val_score( )****
 
@@ -3451,10 +3451,11 @@ sns.barplot(x=dt_clf.feature_importances_ , y=iris_data.feature_names)
 
 # 주요 회귀  방법
 
-## LinearRegression 클래스
+## 선형 회귀(LinearRegression)
 
 ### LinearRegression 란?
 
+- 선형 회귀
 - RSS를 최소화해 OLS(Ordiary Least Squares) 추정 방식
 
 ### 적용
@@ -3616,49 +3617,161 @@ sns.barplot(x=dt_clf.feature_importances_ , y=iris_data.feature_names)
     </aside>
     
 
+## 규제 선형 모델(릿지, 라쏘, 엘라스틱넷)
+
+### alpha와 회귀 계수의 관계
+
+- 선형 모델의 비용 함수는 RSS(실제 값과 예측값의 차이)를 최소화 하는 것
+- 비용 함수는 학습 데이터와 잔차 오류 값을 최소로 하는 RSS 최소화 방법과 과적합을 방지하기 위해 회귀 계수 값이 커지지 않도록 하는 방법이 서로 균형을 이뤄야 함.
+- 이를 위해 학습 데이터의 적합 정도와 회귀 계수 값의 크기를 제어하는 것이 alpha
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2042.png)
+    
+
+<aside>
+💡 alpha 값을 크게 하면 비용 함수는 회귀 계수 W의 값을 작게 해 과적합을 개선
+alpha 값을 작게 하면 회귀 계수 W의 값이 커져도 어느 정도 상쇄가 가능하무로 학습 데이터 적합을 개선할 수 있음
+
+</aside>
+
+- 이처럼 비용함수에 alpha 값으로 패널티를 부여해 회귀 계수 값의 크기를 감소시켜 과적합을 개선하는 방식을 규제라고 부름
+
+### 릿지 회귀
+
+- alpha L2 규제 계수에 해당
+- 적용
+    
+    ```python
+    # 앞의 LinearRegression예제에서 분할한 feature 데이터 셋인 X_data과 Target 데이터 셋인 Y_target 데이터셋을 그대로 이용 
+    from sklearn.linear_model import Ridge
+    from sklearn.model_selection import cross_val_score
+    
+    # boston 데이타셋 로드
+    boston = load_boston()
+    
+    # boston 데이타셋 DataFrame 변환 
+    bostonDF = pd.DataFrame(boston.data , columns = boston.feature_names)
+    
+    # boston dataset의 target array는 주택 가격임. 이를 PRICE 컬럼으로 DataFrame에 추가함. 
+    bostonDF['PRICE'] = boston.target
+    
+    y_target = bostonDF['PRICE']
+    X_data = bostonDF.drop(['PRICE'],axis=1,inplace=False)
+    
+    ridge = Ridge(alpha = 10)
+    neg_mse_scores = cross_val_score(ridge, X_data, y_target, scoring="neg_mean_squared_error", cv = 5)
+    rmse_scores  = np.sqrt(-1 * neg_mse_scores)
+    avg_rmse = np.mean(rmse_scores)
+    print(' 5 folds 의 개별 Negative MSE scores: ', np.round(neg_mse_scores, 3))
+    print(' 5 folds 의 개별 RMSE scores : ', np.round(rmse_scores,3))
+    print(' 5 folds 의 평균 RMSE : {0:.3f} '.format(avg_rmse))
+    ```
+    
+    <aside>
+    ▶️  5 folds 의 개별 Negative MSE scores:  [-11.422 -24.294 -28.144 -74.599 -28.517]
+     5 folds 의 개별 RMSE scores :  [3.38  4.929 5.305 8.637 5.34 ]
+     5 folds 의 평균 RMSE : 5.518
+    
+    </aside>
+    
+    - alpha값을 0 , 0.1 , 1 , 10 , 100 으로 변경하면서 RMSE 측정
+    
+    ```python
+    # 릿지에 사용될 alpha 파라미터의 값을 정의
+    alphas = [0, 0.1, 1, 10, 100]
+    
+    # alphas list 값을 반복하면서 alpha에 따른 평균 rmse를 구함.
+    for alpha in alphas :
+        ridge = Ridge(alpha = alpha)
+        
+        # cross_val_score를 이용해 5 폴드의 평균 RMSE를 계산
+        neg_mse_scores = cross_val_score(ridge, X_data, y_target, scoring="neg_mean_squared_error", cv = 5)
+        avg_rmse = np.mean(np.sqrt(-1 * neg_mse_scores))
+        print('alpha {0} 일 때 5 folds 의 평균 RMSE : {1:.3f} '.format(alpha, avg_rmse))
+    ```
+    
+    <aside>
+    ▶️ alpha 0 일 때 5 folds 의 평균 RMSE : 5.829
+    alpha 0.1 일 때 5 folds 의 평균 RMSE : 5.788
+    alpha 1 일 때 5 folds 의 평균 RMSE : 5.653
+    alpha 10 일 때 5 folds 의 평균 RMSE : 5.518
+    alpha 100 일 때 5 folds 의 평균 RMSE : 5.330
+    
+    </aside>
+    
+    - alpha 100 일 때 가장 좋다.
+    
+    - 각 alpha에 따른 회귀 계수 값을 시각화. 각 alpha값 별로 plt.subplots로 맷플롯립 축 생성
+    
+    ```python
+    # 각 alpha에 따른 회귀 계수 값을 시각화하기 위해 5개의 열로 된 맷플롯립 축 생성  
+    fig , axs = plt.subplots(figsize=(18,6) , nrows=1 , ncols=5)
+    # 각 alpha에 따른 회귀 계수 값을 데이터로 저장하기 위한 DataFrame 생성  
+    coeff_df = pd.DataFrame()
+    
+    # alphas 리스트 값을 차례로 입력해 회귀 계수 값 시각화 및 데이터 저장. pos는 axis의 위치 지정
+    for pos , alpha in enumerate(alphas) :
+        ridge = Ridge(alpha = alpha)
+        ridge.fit(X_data , y_target)
+        # alpha에 따른 피처별 회귀 계수를 Series로 변환하고 이를 DataFrame의 컬럼으로 추가.  
+        coeff = pd.Series(data=ridge.coef_ , index=X_data.columns )
+        colname='alpha:'+str(alpha)
+        coeff_df[colname] = coeff
+        # 막대 그래프로 각 alpha 값에서의 회귀 계수를 시각화. 회귀 계수값이 높은 순으로 표현
+        coeff = coeff.sort_values(ascending=False)
+        axs[pos].set_title(colname)
+        axs[pos].set_xlim(-3,6)
+        sns.barplot(x=coeff.values , y=coeff.index, ax=axs[pos])
+    
+    # for 문 바깥에서 맷플롯립의 show 호출 및 alpha에 따른 피처별 회귀 계수를 DataFrame으로 표시
+    plt.show()
+    ```
+    
+    <aside>
+    ▶️
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2043.png)
+    
+    </aside>
+    
+    - alpha 값을 증가시킬수록 회귀 계수 값은 지속적으로 작아짐
+    - 특히 NOX 피처의 경우 alpha 값을 계속 증가시킴에 따라 회귀 계수가 크게 작아지고 있다.
+    
+    - alpha 값에 따른 컬럼별 회귀계수 출력
+    
+    ```python
+    ridge_alphas = [0 , 0.1 , 1 , 10 , 100]
+    sort_column = 'alpha:'+str(ridge_alphas[0])
+    coeff_df.sort_values(by=sort_column, ascending=False)
+    ```
+    
+    <aside>
+    ▶️
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2044.png)
+    
+    </aside>
+    
+    - alpha 값이 증가하면서 회귀 계수가 지속적으로 작아지고 있다.
+    - 하지만 릿지 회귀의 경우 회귀 계수를 0으로 만들지는 않는다.
+
 # 회귀 평가 지표
 
 ## MAE
 
-### MAE란?
-
 - Mean Absolute Error
 - 실제 값과 예측값의 차이를 절댓값으로 변환해 평균
 
-### 적용
-
-```python
-
-```
-
 ## MSE
-
-### MSE란?
 
 - Mean Squared Error
 - 실제 값과 예측값의 차이를 제곱해 평균
 
-### 적용
-
-```python
-
-```
-
 ## RMSE
-
-### RMSE란?
 
 - MSE 값은 오류의 제곱을 구하므로 실제 오류 평균보다 더 커지는 특성이 있으므로 MSE에 루트를 씌운 것이 RMSE
 
-### 적용
-
-```python
-
-```
-
 ## R²
-
-### R²란?
 
 - 분산 기반으로 예측 성능 평가
 - 실제 값의 분산 대비 예측값의 분산 비율
