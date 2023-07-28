@@ -3639,7 +3639,8 @@ alpha 값을 작게 하면 회귀 계수 W의 값이 커져도 어느 정도 상
 ### 릿지 회귀
 
 - alpha L2 규제 계수에 해당
-- 적용
+- alpha 값이 증가하면서 회귀 계수가 지속적으로 작아지지만 0으로 만들지는 않는다.
+- **적용**
     
     ```python
     # 앞의 LinearRegression예제에서 분할한 feature 데이터 셋인 X_data과 Target 데이터 셋인 Y_target 데이터셋을 그대로 이용 
@@ -3755,6 +3756,235 @@ alpha 값을 작게 하면 회귀 계수 W의 값이 커져도 어느 정도 상
     - alpha 값이 증가하면서 회귀 계수가 지속적으로 작아지고 있다.
     - 하지만 릿지 회귀의 경우 회귀 계수를 0으로 만들지는 않는다.
 
+### 라쏘 회귀
+
+- alpha L1 규제 계수에 해당
+- 불필요한 회귀계수를 급격하게 감소시켜 0으로 만들고 제거한다.
+- **적용**
+    - alpha값을 변화시키면서 MSE, RMSE 출력
+    - 회귀 계수 출력
+    
+    ```python
+    from sklearn.linear_model import Lasso, ElasticNet
+    
+    # alpha값에 따른 회귀 모델의 폴드 평균 RMSE를 출력하고 회귀 계수값들을 DataFrame으로 반환 
+    def get_linear_reg_eval(model_name, params=None, X_data_n=None, y_target_n=None, 
+                            verbose=True, return_coeff=True):
+        coeff_df = pd.DataFrame()
+        if verbose : print('####### ', model_name , '#######')
+        for param in params:
+            if model_name =='Ridge': model = Ridge(alpha=param)
+            elif model_name =='Lasso': model = Lasso(alpha=param)
+            elif model_name =='ElasticNet': model = ElasticNet(alpha=param, l1_ratio=0.7)
+            neg_mse_scores = cross_val_score(model, X_data_n, 
+                                                 y_target_n, scoring="neg_mean_squared_error", cv = 5)
+            avg_rmse = np.mean(np.sqrt(-1 * neg_mse_scores))
+            print('alpha {0}일 때 5 폴드 세트의 평균 RMSE: {1:.3f} '.format(param, avg_rmse))
+            # cross_val_score는 evaluation metric만 반환하므로 모델을 다시 학습하여 회귀 계수 추출
+            
+            model.fit(X_data_n , y_target_n)
+            if return_coeff:
+                # alpha에 따른 피처별 회귀 계수를 Series로 변환하고 이를 DataFrame의 컬럼으로 추가. 
+                coeff = pd.Series(data=model.coef_ , index=X_data_n.columns )
+                colname='alpha:'+str(param)
+                coeff_df[colname] = coeff
+        
+        return coeff_df
+    # end of get_linear_regre_eval
+    ```
+    
+    ```python
+    # 라쏘에 사용될 alpha 파라미터의 값들을 정의하고 get_linear_reg_eval() 함수 호출
+    lasso_alphas = [ 0.07, 0.1, 0.5, 1, 3]
+    coeff_lasso_df =get_linear_reg_eval('Lasso', params=lasso_alphas, X_data_n=X_data, y_target_n=y_target)
+    ```
+    
+    <aside>
+    ▶️ #######  Lasso #######
+    alpha 0.07일 때 5 폴드 세트의 평균 RMSE: 5.612
+    alpha 0.1일 때 5 폴드 세트의 평균 RMSE: 5.615
+    alpha 0.5일 때 5 폴드 세트의 평균 RMSE: 5.669
+    alpha 1일 때 5 폴드 세트의 평균 RMSE: 5.776
+    alpha 3일 때 5 폴드 세트의 평균 RMSE: 6.189
+    
+    </aside>
+    
+    - alpha가 0.07일 때 5.618로 가장 좋은 평균 RMSE를 보여줌.
+    
+    - alpha값에 따른 피처별 회귀 계수
+    
+    ```python
+    # 반환된 coeff_lasso_df를 첫번째 컬럼순으로 내림차순 정렬하여 회귀계수 DataFrame출력
+    sort_column = 'alpha:'+str(lasso_alphas[0])
+    coeff_lasso_df.sort_values(by=sort_column, ascending=False)
+    ```
+    
+    <aside>
+    ▶️
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2045.png)
+    
+    </aside>
+    
+    - alpha가 증가함에 따라 피처의 회귀계수는 0으로 바뀌고 있다.
+    - NoX 속성은 alpha가 0.07일 때부터 회귀 계수가 0이며, alpha를 증가시키면서 INDUS, CHAS와 같은 속성의 회귀 계수가 0으로 바뀐다.
+    - 회귀 계수가 0인 피처는 회귀 식에서 제외되면서 피처 선택의 효과를 얻을 수 있다.
+
+### 엘라스틱넷 회귀
+
+- L2 규제와 L1 규제를 결합
+- 라쏘 회귀가 서로 상관관계가 높은 피처들의 경우 이들 중 중요 피처만 선택하고 다른 피처들은 모두 회귀 계수를 0으로 만드는 성향을 완화함.
+- 주요 생성 파라미터 : alpha, l1_ratio
+    - 엘라스틱넷 회귀의 규제 : a * L1 alpha값 + b * L2 alpha값
+    - alpha = a + b
+    - l1_ratio = a / (a+b)
+- **적용**
+    - alpha의 변화값만 살피기 위해 l1_ratio 는 0.7로 고정
+    
+    ```python
+    # 엘라스틱넷에 사용될 alpha 파라미터의 값들을 정의하고 get_linear_reg_eval() 함수 호출
+    # l1_ratio는 0.7로 고정
+    elastic_alphas = [ 0.07, 0.1, 0.5, 1, 3]
+    coeff_elastic_df =get_linear_reg_eval('ElasticNet', params=elastic_alphas,
+                                          X_data_n=X_data, y_target_n=y_target)
+    ```
+    
+    <aside>
+    ▶️ #######  ElasticNet #######
+    alpha 0.07일 때 5 폴드 세트의 평균 RMSE: 5.542
+    alpha 0.1일 때 5 폴드 세트의 평균 RMSE: 5.526
+    alpha 0.5일 때 5 폴드 세트의 평균 RMSE: 5.467
+    alpha 1일 때 5 폴드 세트의 평균 RMSE: 5.597
+    alpha 3일 때 5 폴드 세트의 평균 RMSE: 6.068
+    
+    </aside>
+    
+    - alpha가 0.5일 때 가장 좋은 예측 성능
+    - alpha값에 따른 피처들의 회귀 계수들이 라쏘보다는 상대적으로 0이 되는 값이 적음
+    
+    ```python
+    # 반환된 coeff_elastic_df를 첫번째 컬럼순으로 내림차순 정렬하여 회귀계수 DataFrame출력
+    sort_column = 'alpha:'+str(elastic_alphas[0])
+    coeff_elastic_df.sort_values(by=sort_column, ascending=False)
+    ```
+    
+    <aside>
+    ▶️
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2046.png)
+    
+    </aside>
+    
+
+## 선형회귀 모델을 위한 데이터 변환
+
+### **필요성**
+
+- 선형회귀 모델을 적용하기 전 먼저 데이터에 대한 스케일링/정규화 작업을 수행하는 것이 일반적 (정규 분포 형태 선호)
+- 무조건 성능이 향상되는 것이 아닌 일반적으로 중요 피처들이나 타깃값의 분포도가 심하게 왜곡되었을 경우 변환 작업 수행
+- 방법
+    
+    1) StadardScaler 클래스를 이용해 정규 분포를 가진 데이터셋으로 변환하거나 MinMaxScaler 클래스를 이요해 정규화 수행
+    
+    2) 스케일링/정규화를수행한 데이터셋에 다시 다항 특성을 적용하여 변환 (1번에서 예측 성능이 향상되지 않았을 경우)
+    
+    3) 원래 값에 log 함수를 적용하면 보다 정규 분포에 가까운 형탵로 값이 분포됨. (로그 변환)
+        → 선형회귀에서는 앞의 두 방법보다 로그변환이 많이 사용됨.
+    
+
+### **적용**
+
+- 표준 정규 분포 변환, 최댓값/최솟값 정규화, 로그 변환을 차례로 적용한 후 RMSE로 각 경우별 예측 성능 측정
+- p_dgree는 다항식 특성을 추가할 때 다항식 차수가 입력됨.
+
+```python
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, PolynomialFeatures
+
+# method는 표준 정규 분포 변환(Standard), 최대값/최소값 정규화(MinMax), 로그변환(Log) 결정
+# p_degree는 다향식 특성을 추가할 때 적용. p_degree는 2이상 부여하지 않음. 
+def get_scaled_data(method='None', p_degree=None, input_data=None):
+    if method == 'Standard':
+        scaled_data = StandardScaler().fit_transform(input_data)
+    elif method == 'MinMax':
+        scaled_data = MinMaxScaler().fit_transform(input_data)
+    elif method == 'Log':
+        scaled_data = np.log1p(input_data)
+    else:
+        scaled_data = input_data
+
+    if p_degree != None:
+        scaled_data = PolynomialFeatures(degree=p_degree, 
+                                         include_bias=False).fit_transform(scaled_data)
+    
+    return scaled_data
+```
+
+- alpha값을 변화시키면서 피처 데이트셋을 여러가지 방법으로 변환한 데이터셋을 입력 받을 경우 RSME 값이 어떻게 변하는지 살펴봄.
+
+```python
+# Ridge의 alpha값을 다르게 적용하고 다양한 데이터 변환방법에 따른 RMSE 추출. 
+alphas = [0.1, 1, 10, 100]
+#변환 방법은 모두 6개, 원본 그대로, 표준정규분포, 표준정규분포+다항식 특성
+# 최대/최소 정규화, 최대/최소 정규화+다항식 특성, 로그변환 
+scale_methods=[(None, None), ('Standard', None), ('Standard', 2), 
+               ('MinMax', None), ('MinMax', 2), ('Log', None)]
+for scale_method in scale_methods:
+    X_data_scaled = get_scaled_data(method=scale_method[0], p_degree=scale_method[1], 
+                                    input_data=X_data)
+    print(X_data_scaled.shape, X_data.shape)
+    print('\n## 변환 유형:{0}, Polynomial Degree:{1}'.format(scale_method[0], scale_method[1]))
+    get_linear_reg_eval('Ridge', params=alphas, X_data_n=X_data_scaled, 
+                        y_target_n=y_target, verbose=False, return_coeff=False)
+```
+
+<aside>
+▶️ (506, 13) (506, 13)
+
+## 변환 유형:None, Polynomial Degree:None
+alpha 0.1일 때 5 폴드 세트의 평균 RMSE: 5.788
+alpha 1일 때 5 폴드 세트의 평균 RMSE: 5.653
+alpha 10일 때 5 폴드 세트의 평균 RMSE: 5.518
+alpha 100일 때 5 폴드 세트의 평균 RMSE: 5.330
+(506, 13) (506, 13)
+
+## 변환 유형:Standard, Polynomial Degree:None
+alpha 0.1일 때 5 폴드 세트의 평균 RMSE: 5.826
+alpha 1일 때 5 폴드 세트의 평균 RMSE: 5.803
+alpha 10일 때 5 폴드 세트의 평균 RMSE: 5.637
+alpha 100일 때 5 폴드 세트의 평균 RMSE: 5.421
+(506, 104) (506, 13)
+
+## 변환 유형:Standard, Polynomial Degree:2
+alpha 0.1일 때 5 폴드 세트의 평균 RMSE: 8.827
+alpha 1일 때 5 폴드 세트의 평균 RMSE: 6.871
+alpha 10일 때 5 폴드 세트의 평균 RMSE: 5.485
+alpha 100일 때 5 폴드 세트의 평균 RMSE: 4.634
+(506, 13) (506, 13)
+
+## 변환 유형:MinMax, Polynomial Degree:None
+alpha 0.1일 때 5 폴드 세트의 평균 RMSE: 5.764
+alpha 1일 때 5 폴드 세트의 평균 RMSE: 5.465
+alpha 10일 때 5 폴드 세트의 평균 RMSE: 5.754
+alpha 100일 때 5 폴드 세트의 평균 RMSE: 7.635
+(506, 104) (506, 13)
+
+## 변환 유형:MinMax, Polynomial Degree:2
+alpha 0.1일 때 5 폴드 세트의 평균 RMSE: 5.298
+alpha 1일 때 5 폴드 세트의 평균 RMSE: 4.323
+alpha 10일 때 5 폴드 세트의 평균 RMSE: 5.185
+alpha 100일 때 5 폴드 세트의 평균 RMSE: 6.538
+(506, 13) (506, 13)
+
+## 변환 유형:Log, Polynomial Degree:None
+alpha 0.1일 때 5 폴드 세트의 평균 RMSE: 4.770
+alpha 1일 때 5 폴드 세트의 평균 RMSE: 4.676
+alpha 10일 때 5 폴드 세트의 평균 RMSE: 4.836
+alpha 100일 때 5 폴드 세트의 평균 RMSE: 6.241
+
+</aside>
+
+- 로그 변환이 alpha가 0.1, 1, 10인 경우에 모두 좋은 성능 향상
+
 # 회귀 평가 지표
 
 ## MAE
@@ -3776,3 +4006,153 @@ alpha 값을 작게 하면 회귀 계수 W의 값이 커져도 어느 정도 상
 - 분산 기반으로 예측 성능 평가
 - 실제 값의 분산 대비 예측값의 분산 비율
 - 1에 가까울수록 예측 정확도가 높다.
+
+---
+
+---
+
+# 차원축소
+
+## 개요
+
+- 차원축소란? 매우 많은 피처로 구성된 다차원 데이터 세트의 차원을 축소해 새로운 차원의 데이터셋을 생성하는 것
+- 수백 개 이상의 피처로 구성된 데이터셋의 경우 예측 신뢰도가 떨어짐 → 다차원의 피처를 차원 축소해 피처 수를  줄이면 더 직관적으로 데이터를 해석할 수 있음.
+- 차원 축소의 종류
+    - 피처 선택
+        - 특정 피처에 종속성이 강한 불필요한 피처 제거
+        - 단순 압축이 아닌 함축적으로 더 잘 설명할 수 있는 또 다른 공간으로 매핑해 추출
+    - 피처 추출
+        - 기존 피처를 저차원의 중요 피처로 압축해서 추출
+- 매우 많은 픽셀로 이루어진 이미지 데이터에서 잠재된 특성을 피처로 도출해 함축적 형태의 이미지 변환과 압축 수행 → 과적합 방지, 예측 성능 향상
+- 텍스트 문서에서도 사용. 문서 내 단어들의 구성에서 숨겨져 있는 시맨틱의 의미나 토픽을 잠재 요소로 간주하고 찾아냄. → SVD, NMF는 시맨틱 토픽 모델 기반 알고리즘
+
+## PCA
+
+### 개요
+
+- 가장 대표적인 차원 축소 기법
+- 여러 변수 간에 존재하는 상관관계를 이용해 이를 대표하는 주성분을 추출해 차원 축소
+- 가장 높은 분산을 가지는 데이터의 축을 찾아 이 축으로 차원을 축소 → PCA의 주성분 석
+
+### 적용
+
+- iris 데이터 사용
+
+```python
+from sklearn.datasets import load_iris
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+# 사이킷런 내장 데이터 셋 API 호출
+iris = load_iris()
+
+# 넘파이 데이터 셋을 Pandas DataFrame으로 변환
+columns = ['sepal_length','sepal_width','petal_length','petal_width']
+irisDF = pd.DataFrame(iris.data , columns=columns)
+irisDF['target']=iris.target
+irisDF.head(3)
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2047.png)
+
+</aside>
+
+- 품종에 따라 데이터셋이 어떻게 분포되어 있는지 시각화
+
+```python
+#setosa는 세모, versicolor는 네모, virginica는 동그라미로 표현
+markers=['^', 's', 'o']
+
+#setosa의 target 값은 0, versicolor는 1, virginica는 2. 각 target 별로 다른 shape으로 scatter plot 
+for i, marker in enumerate(markers):
+    x_axis_data = irisDF[irisDF['target']==i]['sepal_length']
+    y_axis_data = irisDF[irisDF['target']==i]['sepal_width']
+    plt.scatter(x_axis_data, y_axis_data, marker=marker,label=iris.target_names[i])
+
+plt.legend()
+plt.xlabel('sepal length')
+plt.ylabel('sepal width')
+plt.show()
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2048.png)
+
+</aside>
+
+- versivolor와 virginica의 경우 두 속성만으로는 분류가 어려운 복잡한 조건임
+
+- 4 개의 속성을 2개로 압축한 뒤 앞의 예제와 비슷하게 2개의 PCA 속성으로 품종 분포를 2차원으로 시각화
+- PCA는 여러 속성의 값을 연산해야 하므로 스케일에 영향을 많이 받음
+- 따라서 압축 전 각 속성값을 동일한 스케일로 변환하는 것이 필요 → 표준 정규 분포
+
+```python
+from sklearn.preprocessing import StandardScaler
+
+# Target 값을 제외한 모든 속성 값을 StandardScaler를 이용하여 표준 정규 분포를 가지는 값들로 변환
+iris_scaled = StandardScaler().fit_transform(irisDF.iloc[:, :-1])
+```
+
+- 스케일링 적용된 데이터셋에 PCA를 적용해 2개의 PCA 속성 데이터로 변환
+
+```python
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)
+
+#fit( )과 transform( ) 을 호출하여 PCA 변환 데이터 반환
+pca.fit(iris_scaled)
+iris_pca = pca.transform(iris_scaled)
+print(iris_pca.shape)
+```
+
+<aside>
+▶️ (150, 2)
+
+</aside>
+
+```python
+# PCA 환된 데이터의 컬럼명을 각각 pca_component_1, pca_component_2로 명명
+pca_columns=['pca_component_1','pca_component_2']
+irisDF_pca = pd.DataFrame(iris_pca, columns=pca_columns)
+irisDF_pca['target']=iris.target
+irisDF_pca.head(3)
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2049.png)
+
+</aside>
+
+- 시각화
+
+```python
+#setosa를 세모, versicolor를 네모, virginica를 동그라미로 표시
+markers=['^', 's', 'o']
+
+#pca_component_1 을 x축, pc_component_2를 y축으로 scatter plot 수행. 
+for i, marker in enumerate(markers):
+    x_axis_data = irisDF_pca[irisDF_pca['target']==i]['pca_component_1']
+    y_axis_data = irisDF_pca[irisDF_pca['target']==i]['pca_component_2']
+    plt.scatter(x_axis_data, y_axis_data, marker=marker,label=iris.target_names[i])
+
+plt.legend()
+plt.xlabel('pca_component_1')
+plt.ylabel('pca_component_2')
+plt.show()
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2050.png)
+
+</aside>
