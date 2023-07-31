@@ -4225,5 +4225,556 @@ PCA 변환 데이터 평균 정확도: 0.88
 - iris 데이터셋에 LDA 적용
 
 ```python
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.preprocessing import StandardScaler
+from sklearn.datasets import load_iris
 
+iris = load_iris()
+iris_scaled = StandardScaler().fit_transform(iris.data)
 ```
+
+- 2개의 컴포넌트로 붓꽃 데이터를 LDA 변환
+- PCA와는 다르게 지도학습이므로 클래스의 결정 값이 변환시 필요
+
+```python
+lda = LinearDiscriminantAnalysis(n_components=2)
+lda.fit(iris_scaled, iris.target)
+iris_lda = lda.transform(iris_scaled)
+print(iris_lda.shape)
+```
+
+<aside>
+▶️ (150, 2)
+
+</aside>
+
+- 2차원 평면에 시각화
+
+```python
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+lda_columns=['lda_component_1','lda_component_2']
+irisDF_lda = pd.DataFrame(iris_lda,columns=lda_columns)
+irisDF_lda['target']=iris.target
+
+#setosa는 세모, versicolor는 네모, virginica는 동그라미로 표현
+markers=['^', 's', 'o']
+
+#setosa의 target 값은 0, versicolor는 1, virginica는 2. 각 target 별로 다른 shape으로 scatter plot
+for i, marker in enumerate(markers):
+    x_axis_data = irisDF_lda[irisDF_lda['target']==i]['lda_component_1']
+    y_axis_data = irisDF_lda[irisDF_lda['target']==i]['lda_component_2']
+
+    plt.scatter(x_axis_data, y_axis_data, marker=marker,label=iris.target_names[i])
+
+plt.legend(loc='upper right')
+plt.xlabel('lda_component_1')
+plt.ylabel('lda_component_2')
+plt.show()
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2051.png)
+
+</aside>
+
+## SVD
+
+### 개요
+
+- 사이킷런의 TruncatedSVD 클래스는 PCA 클래스와 유사하게 fit()와 transform()을 호출해 원본 데이터를 몇 개의 주요 컴포넌트로 차원 축소해 변환함.
+
+### 적용
+
+- iris 데이터셋 사용
+
+```python
+from sklearn.decomposition import TruncatedSVD, PCA
+from sklearn.datasets import load_iris
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings('ignore')
+%matplotlib inline
+
+iris = load_iris()
+iris_ftrs = iris.data
+# 2개의 주요 component로 TruncatedSVD 변환
+tsvd = TruncatedSVD(n_components=2)
+tsvd.fit(iris_ftrs)
+iris_tsvd = tsvd.transform(iris_ftrs)
+
+# Scatter plot 2차원으로 TruncatedSVD 변환 된 데이터 표현. 품종은 색깔로 구분
+plt.scatter(x=iris_tsvd[:,0], y= iris_tsvd[:,1], c= iris.target)
+plt.xlabel('TruncatedSVD Component 1')
+plt.ylabel('TruncatedSVD Component 2')
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2052.png)
+
+</aside>
+
+- PCA와 유사하게 어느정도 클러스터링이 가능할 정도로 각 변환 속성으로 뛰어난 고유성을 가지고 있음.
+
+- 붓꽃 데잍터셋을 스케일링 한 뒤 SVD와 PCA 클래스 변환하여 비교
+
+```python
+from sklearn.preprocessing import StandardScaler
+
+# 붓꽃 데이터를 StandardScaler로 변환
+scaler = StandardScaler()
+iris_scaled = scaler.fit_transform(iris_ftrs)
+
+# 스케일링된 데이터를 기반으로 TruncatedSVD 변환 수행 
+tsvd = TruncatedSVD(n_components=2)
+tsvd.fit(iris_scaled)
+iris_tsvd = tsvd.transform(iris_scaled)
+
+# 스케일링된 데이터를 기반으로 PCA 변환 수행 
+pca = PCA(n_components=2)
+pca.fit(iris_scaled)
+iris_pca = pca.transform(iris_scaled)
+
+# TruncatedSVD 변환 데이터를 왼쪽에, PCA변환 데이터를 오른쪽에 표현 
+fig, (ax1, ax2) = plt.subplots(figsize=(9,4), ncols=2)
+ax1.scatter(x=iris_tsvd[:,0], y= iris_tsvd[:,1], c= iris.target)
+ax2.scatter(x=iris_pca[:,0], y= iris_pca[:,1], c= iris.target)
+ax1.set_title('Truncated SVD Transformed')
+ax2.set_title('PCA Transformed')
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2053.png)
+
+</aside>
+
+- 거의 비슷한 것을 확인할 수 있음
+
+- 원본 속성별 컴포넌트 비율값을 실제로 비교
+
+```python
+print((iris_pca - iris_tsvd).mean())
+print((pca.components_ - tsvd.components_).mean())
+```
+
+<aside>
+▶️ 2.3216845113083194e-15
+-2.0383000842727483e-17
+
+</aside>
+
+- 모두 0에 가까운 값이므로 2개의 변환이 서로 동일함을 알  수 있다.
+
+# 군집화
+
+## K-Means
+
+### 개요
+
+- **K-Means 군집화란?**
+    - 군집화에서 가장 많이 사용되는 알고리즘.
+    - K-Means는 군집 중심점이라는 특정한 임의의 지점을 선택해 해당 중심에 가장 가까운 포인트들을 선택하는 군집화 기법
+- **파라미터**
+    - n_clusters : 군집화할 개수
+    - init : 초기에 군집 중심점의 좌표를 설정할 방식
+    - max_iter : 최대 반복 횟수
+- **장점**
+    - 일반적으로 군집화에서 가장 많이 활용되는 알고리즘
+    - 알고리즘이 쉽고 간결
+- **단점**
+    - 속성의 개수가 매우 많을 경우 군집화 정확도가 떨어짐 (이를 위해 PCA로 차원 감소를 적용해야 할 수도 있음)
+    - 반복 횟수가 많을 경우 수행 시간이 매우 느려짐
+    - 몇 개의 군집을 선택해야 할지 가이드하기 어려움
+
+### 적용
+
+- iris 데이터셋 사용
+- 붓꽃 데이터를 추출하되 더 편리한 데이터 핸들링을 위해 DataFrame으로 변경
+
+```python
+from sklearn.preprocessing import scale
+from sklearn.datasets import load_iris
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+%matplotlib inline
+
+iris = load_iris()
+# 보다 편리한 데이터 Handling을 위해 DataFrame으로 변환
+irisDF = pd.DataFrame(data=iris.data, columns=['sepal_length','sepal_width','petal_length','petal_width'])
+irisDF.head(3)
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2054.png)
+
+</aside>
+
+- 3개 그룹으로 군집화
+- n_cluster = 3, 초기 중심 설정 방식 = k-means++(default), max_iter = 300
+
+```python
+kmeans = KMeans(n_clusters=3, init='k-means++', max_iter=300,random_state=0)
+kmeans.fit(irisDF)
+```
+
+<aside>
+▶️ KMeans(n_clusters=3, random_state=0)
+
+</aside>
+
+- fit을 수행해 K-Means 객체 변수로  반환
+
+- labels_ 속성값 출력
+
+```python
+print(kmeans.labels_)
+```
+
+<aside>
+▶️ [1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 2 0 2 2 2 2 0 2 2 2 2
+ 2 2 0 0 2 2 2 2 0 2 0 2 0 2 2 0 0 2 2 2 2 2 0 2 2 2 2 0 2 2 2 0 2 2 2 0 2
+ 2 0]
+
+</aside>
+
+- labels_의 값이ㅣ 0, 1, 2로 돼 있으며, 이는 각 레코드가 첫 번째 군집, 두 번째 군집, 세 번째 군집에 속함을 의미.
+
+- target 값을  ‘target’컬럼으로, labels_ 값을 ‘cluster’ 컬럼으로 지정 → iris DataFrame에 추가 후 group by 연산을 실제 분류 값인 target과 군집화 분류값인 cluster 레벨로 적용해 값 개수 비교
+
+```python
+irisDF['target'] = iris.target
+irisDF['cluster']=kmeans.labels_
+iris_result = irisDF.groupby(['target','cluster'])['sepal_length'].count()
+print(iris_result)
+```
+
+<aside>
+▶️ target  cluster
+0       1          50
+1       0          48
+         2           2
+2       0          14
+         2          36
+Name: sepal_length, dtype: int64
+
+</aside>
+
+- target 0값은 모두 cluster 1번 군집으로 그루핑
+- target 1값은 48개가 0번 군집으로 그루핑
+- target 2값은 14개가 0번으로, 36개가 2번으로 그루핑
+
+- 시각화
+- 4개 속성을 2개 속성으로 차원 축소 (PCA)
+
+```python
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2)
+pca_transformed = pca.fit_transform(iris.data)
+
+irisDF['pca_x'] = pca_transformed[:,0]
+irisDF['pca_y'] = pca_transformed[:,1]
+irisDF.head(3)
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2055.png)
+
+</aside>
+
+```python
+# 군집 값이 0, 1, 2인 경우마다 별도의 인덱스로 추출
+marker0_ind = irisDF[irisDF['cluster']==0].index
+marker1_ind = irisDF[irisDF['cluster']==1].index
+marker2_ind = irisDF[irisDF['cluster']==2].index
+
+# 군집 값 0, 1, 2에 해당하는 인덱스로 각 군집 레벨의 pca_x, pca_y 값 추출. o, s, ^ 로 마커 표시
+plt.scatter(x=irisDF.loc[marker0_ind, 'pca_x'], y=irisDF.loc[marker0_ind, 'pca_y'], marker='o')
+plt.scatter(x=irisDF.loc[marker1_ind, 'pca_x'], y=irisDF.loc[marker1_ind, 'pca_y'], marker='s')
+plt.scatter(x=irisDF.loc[marker2_ind, 'pca_x'], y=irisDF.loc[marker2_ind, 'pca_y'], marker='^')
+
+plt.xlabel('PCA 1')
+plt.ylabel('PCA 2')
+plt.title('3 Clusters Visualization by 2 PCA Components')
+plt.show()
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2056.png)
+
+</aside>
+
+### 군집화 평가(실루엣 분석)
+
+- **실루엣 분석이란?**
+    - 각 군집 간의 거리가 얼마나 효율적으로 분리돼 있는지를 나타냄
+    - 실루엣 계수를 기반으로 함.
+        - -1에서 1 사이의 값을 가짐
+        - 1로 가까워질수록 근처의 군집과 더 멀리 떨어져 있다는 것
+        - 0에 가까울 수록 근처의 군집과 가까워진다는 것
+        - - 값은 아예 다른 군집에 데이터 포인트가 할당됐음을 뜻함
+    - 좋은 군집화의 기준
+        - 실루엣 계수가 1에 가까워야 함
+        - 개별 군집의 평균값의 편차가 크지 않아야 함
+- **적용**
+    - iris 데이터셋 이용
+    - metrics 모듈의 silouette_samples()와 silouette_score() 이용
+    
+    ```python
+    from sklearn.preprocessing import scale
+    from sklearn.datasets import load_iris
+    from sklearn.cluster import KMeans
+    # 실루엣 분석 metric 값을 구하기 위한 API 추가
+    from sklearn.metrics import silhouette_samples, silhouette_score
+    import matplotlib.pyplot as plt
+    import numpy as np
+    import pandas as pd
+    
+    %matplotlib inline
+    
+    iris = load_iris()
+    feature_names = ['sepal_length','sepal_width','petal_length','petal_width']
+    irisDF = pd.DataFrame(data=iris.data, columns=feature_names)
+    kmeans = KMeans(n_clusters=3, init='k-means++', max_iter=300,random_state=0).fit(irisDF)
+    
+    irisDF['cluster'] = kmeans.labels_
+    
+    # iris 의 모든 개별 데이터에 실루엣 계수값을 구함. 
+    score_samples = silhouette_samples(iris.data, irisDF['cluster'])
+    print('silhouette_samples( ) return 값의 shape' , score_samples.shape)
+    
+    # irisDF에 실루엣 계수 컬럼 추가
+    irisDF['silhouette_coeff'] = score_samples
+    
+    # 모든 데이터의 평균 실루엣 계수값을 구함. 
+    average_score = silhouette_score(iris.data, irisDF['cluster'])
+    print('붓꽃 데이터셋 Silhouette Analysis Score:{0:.3f}'.format(average_score))
+    
+    irisDF.head(3)
+    ```
+    
+    <aside>
+    ▶️ silhouette_samples( ) return 값의 shape (150,)
+    붓꽃 데이터셋 Silhouette Analysis Score:0.553
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2057.png)
+    
+    </aside>
+    
+    - 평균 실루엣 계수 값 = 0.553
+    - 처음 세개의 로우는 1번 군집에 해당하고 평균 약 0.8 정도의 높은 실루엣 계수를 나타내지만 다른 군집의 실루엣 계수가 낮기 때문에 평균 실루엣 값이 약 0.553 정도가 나옴.
+    
+    - 군집별 평균 실루엣 계수 값 확인
+    
+    ```python
+    irisDF.groupby('cluster')['silhouette_coeff'].mean()
+    ```
+    
+    <aside>
+    ▶️ cluster
+    0    0.417320
+    1    0.798140
+    2    0.451105
+    Name: silhouette_coeff, dtype: float64
+    
+    </aside>
+    
+- **시각화를 통해 적당한 군집 개수 찾기**
+    
+    ```python
+    ### 여러개의 클러스터링 갯수를 List로 입력 받아 각각의 실루엣 계수를 면적으로 시각화한 함수 작성
+    def visualize_silhouette(cluster_lists, X_features): 
+        
+        from sklearn.datasets import make_blobs
+        from sklearn.cluster import KMeans
+        from sklearn.metrics import silhouette_samples, silhouette_score
+    
+        import matplotlib.pyplot as plt
+        import matplotlib.cm as cm
+        import math
+        
+        # 입력값으로 클러스터링 갯수들을 리스트로 받아서, 각 갯수별로 클러스터링을 적용하고 실루엣 개수를 구함
+        n_cols = len(cluster_lists)
+        
+        # plt.subplots()으로 리스트에 기재된 클러스터링 수만큼의 sub figures를 가지는 axs 생성 
+        fig, axs = plt.subplots(figsize=(4*n_cols, 4), nrows=1, ncols=n_cols)
+        
+        # 리스트에 기재된 클러스터링 갯수들을 차례로 iteration 수행하면서 실루엣 개수 시각화
+        for ind, n_cluster in enumerate(cluster_lists):
+            
+            # KMeans 클러스터링 수행하고, 실루엣 스코어와 개별 데이터의 실루엣 값 계산. 
+            clusterer = KMeans(n_clusters = n_cluster, max_iter=500, random_state=0)
+            cluster_labels = clusterer.fit_predict(X_features)
+            
+            sil_avg = silhouette_score(X_features, cluster_labels)
+            sil_values = silhouette_samples(X_features, cluster_labels)
+            
+            y_lower = 10
+            axs[ind].set_title('Number of Cluster : '+ str(n_cluster)+'\n' \
+                              'Silhouette Score :' + str(round(sil_avg,3)) )
+            axs[ind].set_xlabel("The silhouette coefficient values")
+            axs[ind].set_ylabel("Cluster label")
+            axs[ind].set_xlim([-0.1, 1])
+            axs[ind].set_ylim([0, len(X_features) + (n_cluster + 1) * 10])
+            axs[ind].set_yticks([])  # Clear the yaxis labels / ticks
+            axs[ind].set_xticks([0, 0.2, 0.4, 0.6, 0.8, 1])
+            
+            # 클러스터링 갯수별로 fill_betweenx( )형태의 막대 그래프 표현. 
+            for i in range(n_cluster):
+                ith_cluster_sil_values = sil_values[cluster_labels==i]
+                ith_cluster_sil_values.sort()
+                
+                size_cluster_i = ith_cluster_sil_values.shape[0]
+                y_upper = y_lower + size_cluster_i
+                
+                color = cm.nipy_spectral(float(i) / n_cluster)
+                axs[ind].fill_betweenx(np.arange(y_lower, y_upper), 0, ith_cluster_sil_values, \
+                                    facecolor=color, edgecolor=color, alpha=0.7)
+                axs[ind].text(-0.05, y_lower + 0.5 * size_cluster_i, str(i))
+                y_lower = y_upper + 10
+                
+            axs[ind].axvline(x=sil_avg, color="red", linestyle="--")
+    ```
+    
+    - K-Means로 군집화할 때 2개~5개 중 최적의 군집 개수 시각화
+    
+    ```python
+    # make_blobs 을 통해 clustering 을 위한 4개의 클러스터 중심의 500개 2차원 데이터 셋 생성  
+    from sklearn.datasets import make_blobs
+    X, y = make_blobs(n_samples=500, n_features=2, centers=4, cluster_std=1, \
+                      center_box=(-10.0, 10.0), shuffle=True, random_state=1)  
+    
+    # cluster 개수를 2개, 3개, 4개, 5개 일때의 클러스터별 실루엣 계수 평균값을 시각화 
+    visualize_silhouette([ 2, 3, 4, 5], X)
+    ```
+    
+    <aside>
+    ▶️
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2058.png)
+    
+    </aside>
+    
+    - 군집이 4개일 때 가장 최적
+    
+    - iris 데이터셋에도 적용
+    - K-Means 수행 후 최적의 군집 개수 찾기
+    
+    ```python
+    from sklearn.datasets import load_iris
+    
+    iris=load_iris()
+    visualize_silhouette([ 2, 3, 4,5 ], iris.data)
+    ```
+    
+    <aside>
+    ▶️
+    
+    ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2059.png)
+    
+    </aside>
+    
+    - 군집 개수를 2개로 하는 것이 가장 최적
+
+## DBSCAN
+
+### 개요
+
+- **DBSCAN이란?**
+    - 밀도 기반 군집화
+    - 데이터의 분포가 기하학적으로 복잡한 데이터셋에도 효과적인 군집화 가능
+    - 특정 공간 내에서 데이터 밀도 차이를 기반한 알고리즘
+- 파라미터
+    - 입실론 주변 영역(epsilon) : 개별 데이터를 중십으로 입실론 반경을 가지는 원형의 영역
+    - 최소 데이터 개수(min point) : 개별 데이터의 입실론 주변 영역에 포함되는 타 데이터의 개수
+
+### 적용
+
+- iris 데이터셋 이용
+
+```python
+from sklearn.datasets import load_iris
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+%matplotlib inline
+
+iris = load_iris()
+feature_names = ['sepal_length','sepal_width','petal_length','petal_width']
+
+# 보다 편리한 데이타 Handling을 위해 DataFrame으로 변환
+irisDF = pd.DataFrame(data=iris.data, columns=feature_names)
+irisDF['target'] = iris.target
+```
+
+- DBSCAN 클래스를 이용해 군집화
+- eps = 0.6, min_samples=8
+
+```python
+from sklearn.cluster import DBSCAN
+
+dbscan = DBSCAN(eps=0.6, min_samples=8, metric='euclidean')
+dbscan_labels = dbscan.fit_predict(iris.data)
+
+irisDF['dbscan_cluster'] = dbscan_labels
+irisDF['target'] = iris.target
+
+iris_result = irisDF.groupby(['target'])['dbscan_cluster'].value_counts()
+print(iris_result)
+```
+
+<aside>
+▶️ target  dbscan_cluster
+0        0                49
+        -1                 1
+1        1                46
+        -1                 4
+2        1                42
+        -1                 8
+Name: dbscan_cluster, dtype: int64
+
+</aside>
+
+- 0과 1 외 -1이 군집 레이블에 있음 → -1인 것은 노이즈에 속하는 군집 → 0과 1만 고려
+- DBSCAN은 알고리즘에 따라 군집의 개수가 자동으로 지정됨
+- 따라서 0과 1 두개의 군집으로 그루핑됨을 알 수 있음
+
+- 시각화
+
+```python
+from sklearn.decomposition import PCA
+# 2차원으로 시각화하기 위해 PCA n_componets=2로 피처 데이터 세트 변환
+pca = PCA(n_components=2, random_state=0)
+pca_transformed = pca.fit_transform(iris.data)
+# visualize_cluster_2d( ) 함수는 ftr1, ftr2 컬럼을 좌표에 표현하므로 PCA 변환값을 해당 컬럼으로 생성
+irisDF['ftr1'] = pca_transformed[:,0]
+irisDF['ftr2'] = pca_transformed[:,1]
+
+visualize_cluster_plot(dbscan, irisDF, 'dbscan_cluster', iscenter=False)
+```
+
+<aside>
+▶️
+
+![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2060.png)
+
+</aside>
