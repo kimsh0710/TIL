@@ -4156,3 +4156,74 @@ plt.show()
 ![Untitled](Machine%20Learning%201bf9420c06824cc1bdabb2497ca8765d/Untitled%2050.png)
 
 </aside>
+
+- PCA로 변환한 후 Versicolor와 Virginica는 서로 겹치는 부분이 있지만 비교적 잘 구분됨.
+
+- PCA Compenent 별로 원본 데이터의 변동성을 얼마나 반영하고 있는지 알아보기.
+- explained_variance_ratio_ : 개별 PCA 컴포넌트별로 차지하는 변동성 비율 제공
+
+```python
+print(pca.explained_variance_ratio_)
+```
+
+<aside>
+▶️ [0.72962445 0.22850762]
+
+</aside>
+
+- 첫번째 PCA 요소인 pca_component_1이 전체 변동성의 약 72.9%를 차지하며, 두번째인 pca_component_2가 약 22.8%를 차지 → 두 PCA 요소만으로 원본 데이터의 변동성을 95% 설명할 수 있음.
+
+- 원본 붓꽃 데이터 셋과 PCA 변환 후 데이터셋의 결과 비교
+- RanDomForesctClassifier 이용. cross_val_score()로 3개의 교차 검증 세트로 정확도 결과 비교
+
+```python
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score
+import numpy as np
+
+rcf = RandomForestClassifier(random_state=156)
+scores = cross_val_score(rcf, iris.data, iris.target,scoring='accuracy',cv=3)
+print('원본 데이터 교차 검증 개별 정확도:',scores)
+print('원본 데이터 평균 정확도:', np.mean(scores))
+```
+
+<aside>
+▶️ 원본 데이터 교차 검증 개별 정확도: [0.98 0.94 0.96]
+원본 데이터 평균 정확도: 0.96
+
+</aside>
+
+- 2차원 PCA변환 데이터셋에 랜덤포레스트 적용
+
+```python
+pca_X = irisDF_pca[['pca_component_1', 'pca_component_2']]
+scores_pca = cross_val_score(rcf, pca_X, iris.target, scoring='accuracy', cv=3 )
+print('PCA 변환 데이터 교차 검증 개별 정확도:',scores_pca)
+print('PCA 변환 데이터 평균 정확도:', np.mean(scores_pca))
+```
+
+<aside>
+▶️ PCA 변환 데이터 교차 검증 개별 정확도: [0.88 0.88 0.88]
+PCA 변환 데이터 평균 정확도: 0.88
+
+</aside>
+
+- 원본 데이터셋 대비 예측 정확도는 PCA 변환 차원 개수에 따라 예측 성능이 떨어질 수 밖에 없음.
+- 4개의 속성이 2개로, 속성 개수가 50% 감소한 것을 고려하면 PCA 변환 후에도 원본 데이터의 특성을 상당 부분 유지하고 있음을 알 수 있음.
+
+## LDA
+
+### 개요
+
+- 선형 판별 분석법
+- 지도학습의 분류에서 사용하기 쉽도록 개별 클래스를 분별할 수 있는 기준을 최대한 유지하면서 차원 축소
+- 입력 데이터의 결정 값 클래스를 최대한으로 분리할 수 있는 축을 찾는다.
+- 클래스 간 분산과 클래스 내부 분산의 비율을 최대화하는 방식으로 차원 축소
+
+### 적용
+
+- iris 데이터셋에 LDA 적용
+
+```python
+
+```
